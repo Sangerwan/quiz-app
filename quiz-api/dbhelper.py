@@ -17,7 +17,52 @@ class DBHelper:
 			print(e)
 
 		self.db_connection = db_connection
+
 		
+
+	def deleteAnswersOfQuestion(self,id_question):
+		query = (
+			f"DELETE FROM answers WHERE questionID="+id_question
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			print(curr.execute(query))
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+		
+	def deleteQuestion(self,id_question):
+		querySel = (
+			f"SELECT id FROM questions WHERE id="+id_question
+		)
+		queryDel = (
+			f"DELETE FROM questions WHERE id="+id_question
+		)
+		curr = self.db_connection.cursor()
+		len_select=0
+		try :
+			curr.execute("begin")
+			curr.execute(querySel)
+			len_select=len(curr.fetchall())			
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+			return
+
+		if len_select==0:
+				raise Exception("Object does not exist in base") 
+
+		try :
+			curr.execute("begin")
+			curr.execute(queryDel)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
 
 	def insertQuestion(self, question: question.Question):
 		question_json = question.convertToJson()

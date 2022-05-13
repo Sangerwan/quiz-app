@@ -46,6 +46,28 @@ def SetQuestions():
 	except jwt_utils.JwtError as e:
 			return e.message, 401
 
+
+@app.route('/questions/<id>', methods=['DELETE'])
+def DeleteQuestions(id):
+	try:
+		token = request.headers.get('Authorization')
+		token = token.split(' ')[1]
+	except AttributeError as e:
+		return 'Wrong Token / Format', 401
+	
+	try:
+		#check if the token is valid
+		if jwt_utils.decode_token(token) == "quiz-app-admin":
+
+			dbHelper = DBHelper()
+			dbHelper.deleteQuestion(id)
+			dbHelper.deleteAnswersOfQuestion(id)				
+			return '', 200
+	except jwt_utils.JwtError as e:
+			return e.message, 401
+	except Exception as e_custom:	
+			return e_custom.args[0], 401
+
 if __name__ == "__main__":
     app.run(ssl_context='adhoc')
     	
