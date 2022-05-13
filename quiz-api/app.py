@@ -8,4 +8,5 @@ def hello_world():
 	return f"Hello, {x}"
 
 if __name__ == "__main__":
-    app.run()
+    if __name__ == "__main__":
+    	app.run(ssl_context='adhoc')
