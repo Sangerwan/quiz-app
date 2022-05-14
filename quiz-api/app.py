@@ -1,4 +1,5 @@
 from flask import Flask, request
+from ObjectNotExistException import ObjectNotExistException
 import jwt_utils
 from question import Question
 from answer import Answer
@@ -64,9 +65,11 @@ def DeleteQuestions(id):
 			dbHelper.deleteAnswersOfQuestion(id)				
 			return '', 200
 	except jwt_utils.JwtError as e:
-			return e.message, 401
-	except Exception as e_custom:	
-			return e_custom.args[0], 401
+		return e.message, 401
+	except ObjectNotExistException as e_custom:	
+		return e_custom.message, 404
+	except Exception as e_base:	
+		return e_base.message, 404
 
 if __name__ == "__main__":
     app.run(ssl_context='adhoc')

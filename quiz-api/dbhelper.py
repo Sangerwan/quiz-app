@@ -1,4 +1,5 @@
 import sqlite3
+from ObjectNotExistException import ObjectNotExistException
 import question
 import answer
 class DBHelper:
@@ -54,7 +55,7 @@ class DBHelper:
 			return
 
 		if len_select==0:
-				raise Exception("Object does not exist in base") 
+			raise ObjectNotExistException() 
 
 		try :
 			curr.execute("begin")
