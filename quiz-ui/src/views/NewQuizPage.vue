@@ -3,13 +3,12 @@
     <h1>New Quiz</h1>
 
     <h3>Saisissez votre nom :</h3>
-    <form action="/action_page.php">
+    <form>
       <label for="fname">Username</label>
       <input type="text" id="fname" name="firstname" placeholder="Unknown" v-model="username">
-
     </form>
 
-    <Button type="button" class="buttonSimple" value="Go!"></Button>
+    <Button @click="launchNewQuiz" class="buttonSimple">Go!</Button>
 
   </div>
 </template>
