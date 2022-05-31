@@ -18,11 +18,11 @@ export default {
     };
   },
   async created() {
-    quizApiService.getQuizInfo().then((instance) => {
-      
-      console.log("after init ", instance.data);
-      console.log("scores:", instance.data.scores);
-    })
+    const instance = await quizApiService.getQuizInfo();      
+    console.log("after init ", instance.data);
+    console.log("scores:", instance.data.scores);
+
+
     //console.log("Composant Home page 'created' ", this.registeredScores.length);
   }
 };

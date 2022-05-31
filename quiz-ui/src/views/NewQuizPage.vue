@@ -4,11 +4,20 @@
 
     <h3>Saisissez votre nom :</h3>
     <form>
-      <label for="fname">Username</label>
-      <input type="text" id="fname" name="firstname" placeholder="Unknown" v-model="username">
+      <div class="horizontalDiv">
+        <label for="fname">Username</label>
+        <input type="text" id="fname" name="firstname" placeholder="Unknown" v-model="username">
+      </div>
+
+      <div class="horizontalDiv">
+        <label for="fpassword">Password</label>
+        <input type="password" id="fpassword" name="password" placeholder="" v-model="password">
+      </div>     
     </form>
 
-    <Button @click="launchNewQuiz" class="buttonSimple">Go!</Button>
+    <button @click="launchNewQuiz" class="buttonSimple">Go!</button>
+
+    <p>{{ errorDetails }}</p> 
 
   </div>
 </template>
@@ -21,16 +30,31 @@ export default {
   name: "NewQuizPage",
   data() {
     return {//rertourne des données réactives
-      username: participationStorageService.getPlayerName()
+      username: participationStorageService.getPlayerName(),
+      password: "",
+      errorDetails: ""
     };
-  },
+  },  
   methods: {
-    launchNewQuiz() {
-      participationStorageService.savePlayerName(this.username);
-      this.$router.push('/questions');
+    async launchNewQuiz() {
+      try {        
+        this.errorDetails="";
+        const response = await quizApiService.login(this.password);//Vive l'ESIEE !
+        participationStorageService.saveToken(response.data.token);
+        participationStorageService.savePlayerName(this.username);
+        //this.$router.push('/questions');
+        this.errorDetails="Good password";
+      } catch (e) {
+        this.errorDetails="Wrong password";
+        this.password= "";
+      }
+      
     },
   },
-  
+  async created(){      
+    
+  }
+
 };
 
 </script>
@@ -96,6 +120,15 @@ export default {
 
   .buttonSimple:hover {
     background-color: #45a049;
+  }
+
+  .horizontalDiv {
+    display: flex;
+    align-items: center;
+  }
+
+  label {
+    margin-right: 15px;
   }
 
   div {

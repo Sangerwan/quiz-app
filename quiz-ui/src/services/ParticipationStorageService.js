@@ -9,6 +9,12 @@ export default {
   savePlayerName(playerName) {
     window.localStorage.setItem("playerName", playerName);
   },
+  saveToken(token){
+    window.localStorage.setItem("token", token);
+  },
+  getToken(){
+    return window.localStorage.getItem("token");
+  },
   getPlayerName() {
     return window.localStorage.getItem("playerName");
   },

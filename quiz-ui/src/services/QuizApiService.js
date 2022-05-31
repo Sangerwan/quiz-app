@@ -7,8 +7,10 @@ const instance = axios.create({
 
 export default {
   async call(method, resource, data = null, token = null) {
+    console.log("toto="+data);
     var headers = {
       "Content-Type": "application/json",
+      "Authorization" : token
     };
     if (token != null) {
       headers.authorization = "Bearer " + token;
@@ -32,5 +34,9 @@ export default {
   },
   getQuestion(position) {
     // not implemented
-  }
+  },
+  login(passwordTest) {
+    return this.call("post","login", {password : passwordTest});
+  },
+
 };
