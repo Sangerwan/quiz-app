@@ -72,5 +72,5 @@ def DeleteQuestions(id):
 		return e_base.message, 404
 
 if __name__ == "__main__":
-    app.run(ssl_context='adhoc')
+    app.run()
     	
