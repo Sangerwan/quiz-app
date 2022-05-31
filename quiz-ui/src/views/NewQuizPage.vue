@@ -15,17 +15,19 @@
 
 <script>
 import quizApiService from "@/services/quizApiService";
+import participationStorageService from "@/services/ParticipationStorageService";
 
 export default {
   name: "NewQuizPage",
   data() {
     return {//rertourne des données réactives
-      username: ''
+      username: participationStorageService.getPlayerName()
     };
   },
   methods: {
     launchNewQuiz() {
-      console.log("Launch new quiz with", this.username);
+      participationStorageService.savePlayerName(this.username);
+      this.$router.push('/questions');
     },
   },
   async created() {
