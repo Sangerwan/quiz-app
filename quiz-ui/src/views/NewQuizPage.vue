@@ -30,12 +30,7 @@ export default {
       this.$router.push('/questions');
     },
   },
-  async created() {
-    quizApiService.getQuizInfo().then((instance) => {
-      console.log("after init ", this.registeredScores.length);
-    })
-    console.log("Composant Home page 'created' ", this.registeredScores.length);
-  }
+  
 };
 
 </script>
