@@ -1,10 +1,12 @@
 from flask import Flask, request
+from flask_cors import CORS
 from ObjectNotExistException import ObjectNotExistException
 import jwt_utils
 from question import Question
 from answer import Answer
 from dbhelper import DBHelper
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/')
 def hello_world():
@@ -73,4 +75,5 @@ def DeleteQuestions(id):
 
 if __name__ == "__main__":
     app.run()
+
     	
