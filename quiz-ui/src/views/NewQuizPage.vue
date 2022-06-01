@@ -40,6 +40,7 @@ export default {
       try {        
         this.errorDetails="";
         const response = await quizApiService.login(this.password);//Vive l'ESIEE !
+        console.log(response.data)
         participationStorageService.saveToken(response.data.token);
         participationStorageService.savePlayerName(this.username);
         //this.$router.push('/questions');
@@ -51,7 +52,17 @@ export default {
       
     },
   },
-  async created(){      
+  async created(){    
+    try {       
+        const response =  await quizApiService.isLogged(participationStorageService.getToken());
+        if (response.data.isLogged) {
+          this.errorDetails="token valid";
+        }else{
+          this.errorDetails="wrong token";
+        }          
+      } catch (e) {
+        this.errorDetails="wrong token";
+      }  
     
   }
 

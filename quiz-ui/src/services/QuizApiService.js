@@ -38,5 +38,8 @@ export default {
   login(passwordTest) {
     return this.call("post","login", {password : passwordTest});
   },
+  isLogged(token){
+    return this.call("get","is-logged",{},token);
+  }
 
 };

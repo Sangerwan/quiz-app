@@ -2,6 +2,7 @@ import sqlite3
 from ObjectNotExistException import ObjectNotExistException
 import question
 import answer
+import participation
 class DBHelper:
 	def __init__(self):
 		#création d'un objet connection
@@ -12,7 +13,7 @@ class DBHelper:
 		db_connection = None
 
 		try:
-			db_connection = sqlite3.connect("./db.db")
+			db_connection = sqlite3.connect("./quiz-api/db.db")
 			db_connection.isolation_level = None
 		except Exception as e:
 			print(e)
@@ -104,4 +105,97 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 
+	def getIdGoodAnswerOfQuestion(self, id_question):
+		query = (
+			f"SELECT id FROM ANSWERS where questionID="+str(id_question) +" AND isCorrect='True'"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			result =[]
+			curr.execute("begin")
+			curr.execute(query)
+			for (id) in curr :
+				result.append(id[0])
+			
+			curr.execute("commit")
+			return result[0]
+
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+			return -1
+
+	def selectParticipationsFromName(self, player_name):
+		query = (
+			f"SELECT id FROM PARTICIPATIONS where player_name="+player_name
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			result=curr[0][0]
+			curr.execute("commit")
+			return result
+
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+			return -1
+
+	def selectAllQuestionsId(self):
+		query = (
+			f"SELECT id FROM questions"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			result =[]
+			curr.execute("begin")
+			curr.execute(query)
+			for (id) in curr :
+				result.append(id[0])
+			curr.execute("commit")
+			return result
+
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+			return []
+
+	def selectAllPlayersName(self):
+		query = (
+			f"SELECT player_name FROM PLAYERS"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			result = []
+			curr.execute("begin")
+			curr.execute(query)
+			for (player_name) in curr :
+				result.append(player_name[0])
+			curr.execute("commit")
+			return result
+
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+			return []
+
+	def insertParticipation(self, participation: participation.Participation):
+		question_json = participation.convertToJson()
+		for idx, key in enumerate(question_json):
+			if isinstance(question_json[key], str):
+				question_json[key] = question_json[key].replace("'", "''")
+				
+		query = (
+			f"INSERT INTO PARTICIPATIONS (player_name, answer_id, good_answer) VALUES"
+			f"('{question_json['player_name']}', '{question_json['id_question']}', '{question_json['id_question']}')"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
 
