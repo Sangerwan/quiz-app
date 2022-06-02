@@ -26,8 +26,16 @@ def GetQuizInfo():
 @app.route('/login', methods=['POST'])
 def Login():
 	payload = request.get_json()
+	try :
+		username =payload["username"]
+	except Exception as e :
+		#No username
+		username="random"
+			
 	if(payload["password"] == "Vive l'ESIEE !"):
 		token = jwt_utils.build_token()
+		dbHelper = DBHelper()
+		dbHelper.insertPlayer(username)
 		return {"token": token}, 200
 	return '', 401 
 

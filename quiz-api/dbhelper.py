@@ -259,6 +259,21 @@ class DBHelper:
 			curr.execute('rollback')
 			return []
 
+	def insertPlayer(self,username):				
+		query = (
+			f"INSERT INTO PLAYERS (Name) VALUES"
+			f"('{username}')"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+
 	def insertParticipation(self, participation: participation.Participation):
 		question_json = participation.convertToJson()
 		for idx, key in enumerate(question_json):

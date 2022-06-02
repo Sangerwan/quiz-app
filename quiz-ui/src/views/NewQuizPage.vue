@@ -39,7 +39,7 @@ export default {
     async launchNewQuiz() {
       try {        
         this.errorDetails="";
-        const response = await quizApiService.login(this.password);//Vive l'ESIEE !
+        const response = await quizApiService.login(this.password,this.username);//Vive l'ESIEE !
         console.log(response.data)
         participationStorageService.saveToken(response.data.token);
         participationStorageService.savePlayerName(this.username);
