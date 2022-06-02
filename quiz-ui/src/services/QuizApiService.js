@@ -12,7 +12,7 @@ export default {
       "Authorization" : ""
     };
     if (token != null) {
-      headers.authorization = "Bearer " + token;
+      headers.authorization = token;
     }
 
     return instance({
