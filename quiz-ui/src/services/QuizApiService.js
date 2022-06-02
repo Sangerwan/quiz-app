@@ -9,7 +9,7 @@ export default {
   async call(method, resource, data = null, token = null) {
     var headers = {
       "Content-Type": "application/json",
-      "Authorization" : token
+      "Authorization" : ""
     };
     if (token != null) {
       headers.authorization = "Bearer " + token;
@@ -46,8 +46,8 @@ export default {
   isLogged(token){
     return this.call("get","is-logged",{},token);
   },
-  setParticipation(playerName,answers, token){
-    return this.call("post","participations",{playerName : playerName, answers : answers}, null,token)
+  setParticipation(username,answers, token){
+    return this.call("post","participations",{username : username, answers : answers},token)
   }
 
 };
