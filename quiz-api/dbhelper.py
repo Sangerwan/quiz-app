@@ -429,6 +429,8 @@ class DBHelper:
 		questionWithAnswers = question.Question.convertJsonToQuestion(question_json)
 		questionWithAnswers.possibleAnswers = self.getAnswersOfQuestion(questionWithAnswers.id)
 
+		return questionWithAnswers
+
 	def decreaseQuestionPosition(self, start_position, end_position):
 		query = (
 			f"UPDATE questions SET position=position-1 WHERE position>"+str(start_position)+" AND position<="+str(end_position)

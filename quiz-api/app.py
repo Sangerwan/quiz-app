@@ -194,7 +194,7 @@ def AnswersToQuestion():
 
 
 @app.route('/questions', methods=['POST'])
-def AddQuestions():
+def UpdateQuestions():
 	try:
 		token = request.headers.get('Authorization')
 		token = token.split(' ')[1]
