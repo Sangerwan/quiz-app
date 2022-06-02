@@ -325,7 +325,7 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
-			
+
 	def getQuestion(self, position):
 		query = (
 			f"SELECT * FROM questions WHERE position="+str(position)
@@ -379,3 +379,64 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
+	def increaseQuestionPosition(self, start_position, end_position):
+		query = (
+			f"UPDATE questions SET position=position+1 WHERE position>="+str(start_position)+" AND position<"+str(end_position)
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+
+	def decreaseQuestionPosition(self, start_position, end_position):
+		query = (
+			f"UPDATE questions SET position=position-1 WHERE position>"+str(start_position)+" AND position<="+str(end_position)
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+	def updateQuestion(self, old_position :int ,question: question.Question, answers: list):
+		new_position = question.position
+		if new_position > old_position:
+			self.decreaseQuestionPosition(old_position, new_position)
+		else:
+			self.increaseQuestionPosition(question.position, old_position)
+		questionID = self.getQuestionID(question)
+		query = (
+			f"UPDATE questions SET position='{question.position}' WHERE id='{questionID}"
+		)
+		try:
+			curr = self.db_connection.cursor()
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+	def getQuestionID(self, question: question.Question):
+		query = (
+			f"SELECT id FROM questions WHERE position='{question.position}' AND text='{question.text}' AND title='{question.title}' AND image='{question.image}'"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			question_id = curr.fetchone()[0]
+			question.id = question_id
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+		return question_id
