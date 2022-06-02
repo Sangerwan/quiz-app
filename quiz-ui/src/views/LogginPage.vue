@@ -15,7 +15,7 @@
       </div>     
     </form>
 
-    <button @click="launchNewQuiz" class="buttonSimple">Go!</button>
+    <button @click="connect" class="buttonSimple">Connect</button>
 
     <p>{{ errorDetails }}</p> 
 
@@ -32,19 +32,18 @@ export default {
     return {//rertourne des données réactives
       username: participationStorageService.getPlayerName(),
       password: "",
-      errorDetails: ""
+      errorDetails: "",
     };
   },  
   methods: {
-    async launchNewQuiz() {
+    async connect() {
       try {        
         this.errorDetails="";
-        const response = await quizApiService.login(this.password,this.username);//Vive l'ESIEE !
-        console.log(response.data)
+        const response = await quizApiService.login(this.password,this.username);
+        this.errorDetails="Good password";
         participationStorageService.saveToken(response.data.token);
         participationStorageService.savePlayerName(this.username);
-        //this.$router.push('/questions');
-        this.errorDetails="Good password";
+        this.$router.push('/home-page-logged');        
       } catch (e) {
         this.errorDetails="Wrong password";
         this.password= "";
@@ -58,12 +57,10 @@ export default {
           participationStorageService.getPlayerName(),
           participationStorageService.getToken());
         if (response.data.isLogged) {
-          this.errorDetails=participationStorageService.getPlayerName()+" is logged";
-        }else{
-          this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
-        }          
+          this.$router.push('/home-page-logged');
+        }           
       } catch (e) {
-        this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
+        
       }  
     
   }

@@ -3,6 +3,8 @@ import HomePage from '../views/HomePage.vue'
 import NewQuizPage from '../views/NewQuizPage.vue'
 import Question from '../views/NewQuizPage.vue'
 import QuestionManager from '../views/QuestionManager.vue'
+import LogginPage from '../views/LogginPage.vue'
+import HomePageLogged from '../views/HomePageLogged.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,6 +13,16 @@ const router = createRouter({
       path: '/',
       name: 'HomePage',
       component: HomePage
+    },
+    {
+      path: '/home-page-logged',
+      name: 'HomePageLogged',
+      component: HomePageLogged
+    },
+    {
+      path: '/loggin-page',
+      name: 'LogginPage',
+      component: LogginPage
     },
     {
       path: '/start-new-quiz-page',

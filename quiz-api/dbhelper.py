@@ -170,13 +170,14 @@ class DBHelper:
 		try :
 			curr.execute("begin")
 			curr.execute(query)
-			result=curr[0][0]
+			for (Score) in curr :
+				result=Score[0]
 			curr.execute("commit")
 			return result
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
-			return 0
+			return -1
 
 	def setScoreForName(self, player_name,score):
 		query = (
@@ -310,8 +311,8 @@ class DBHelper:
 
 	def insertPlayer(self,username):				
 		query = (
-			f"INSERT INTO PLAYERS (Name) VALUES"
-			f"('{username}')"
+			f"INSERT INTO PLAYERS (Name,Score) VALUES"
+			f"('{username}','-1')"
 		)
 		curr = self.db_connection.cursor()
 		try :

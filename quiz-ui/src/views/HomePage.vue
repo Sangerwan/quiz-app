@@ -1,15 +1,11 @@
 <template>
-  <h1>Home page</h1>
-  <div v-for="scoreEntry in registeredScores" v-bind:key="scoreEntry.date">
-    {{ scoreEntry.playerName }} - {{ scoreEntry.score }}
-  </div>
-
-  <router-link to="/start-new-quiz-page">Démarrer le quiz !</router-link>
-  <router-link to="/question-manager">Question Display</router-link>
+  <h1>WELCOME</h1>
+  
 </template>
 
 <script>
 import quizApiService from "@/services/quizApiService";
+import participationStorageService from "@/services/ParticipationStorageService";
 
 export default {
   name: "HomePage",
@@ -19,9 +15,25 @@ export default {
     };
   },
   async created() {
-    const instance = await quizApiService.getQuizInfo();      
-    console.log("after init ", instance.data);
-    console.log("scores:", instance.data.scores);
+    const instance = await quizApiService.getQuizInfo();   
+     try {    
+       const username =   participationStorageService.getPlayerName()
+       if (username==null || username == ""){
+          this.$router.push('/loggin-page');
+       }
+        const response =  await quizApiService.isLogged(
+          participationStorageService.getPlayerName(),
+          participationStorageService.getToken());
+        if (response.data.isLogged) {
+          this.$router.push('/home-page-logged');
+          this.errorDetails=participationStorageService.getPlayerName()+" is logged";
+        }else{
+          this.$router.push('/loggin-page');
+          this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
+        }          
+      } catch (e) {
+        this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
+      }  
 
 
     //console.log("Composant Home page 'created' ", this.registeredScores.length);

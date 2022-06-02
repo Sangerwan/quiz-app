@@ -1,3 +1,4 @@
+from msilib.schema import Error
 from typing import Dict
 from flask import Flask, request
 from flask_cors import CORS
@@ -55,8 +56,8 @@ def Login():
 		return {"token": token}, 200
 	return '', 401 
 
-@app.route('/is-logged', methods=['GET'])
-def isLogged():
+@app.route('/is-logged/<username>', methods=['GET'])
+def isLogged(username):
 	try:
 		token = request.headers.get('Authorization')
 		token = token.split(' ')[1]
@@ -64,14 +65,32 @@ def isLogged():
 		return {"isLogged": False}, 200
 	try:
 		#check if the token is valid
-		payload = request.get_json()
-		if jwt_utils.decode_token(token) == payload["username"]:
+		if jwt_utils.decode_token(token) == username:
 			return {"isLogged": True}, 200
 		else :
 			return {"isLogged": False}, 200
 	except jwt_utils.JwtError as e:
 			return {"isLogged": False}, 200
-	return '', 401 
+	except Exception as e:
+		return '', 401 
+
+
+@app.route('/get-score/<username>', methods=['GET'])
+def getScore(username):
+	try:
+		token = request.headers.get('Authorization')
+		token = token.split(' ')[1]
+	except AttributeError as e:
+		return e.message, 401
+	try:
+		if jwt_utils.decode_token(token) == username:
+			dbHelper = DBHelper()
+			score = dbHelper.getScoreForName(username)
+			return {"score": score}, 200
+	except jwt_utils.JwtError as e:
+			return e.message, 401
+	except Exception as e:
+		return e.message, 401
 
 @app.route('/questions', methods=['POST'])
 def AddQuestions():

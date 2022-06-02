@@ -43,11 +43,17 @@ export default {
   login(passwordTest,username) {
     return this.call("post","login", {password : passwordTest, username : username});
   },
-  isLogged(token){
-    return this.call("get","is-logged",{},token);
+  isLogged(username,token){
+    if (username==""){
+      return {"isLogged": False}, 200
+    }
+    return this.call("get",`is-logged/${username}`,null,token);
   },
   setParticipation(username,answers, token){
     return this.call("post","participations",{username : username, answers : answers},token)
+  },
+  getScoreOfUser(username,token){
+    return this.call("get",`get-score/${username}`,null,token)
   }
 
 };

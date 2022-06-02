@@ -22,6 +22,16 @@ export default {
     };
   },
   async created() {
+    try {       
+        const response =  await quizApiService.isLogged(
+          ParticipationStorageService.getPlayerName(),
+          ParticipationStorageService.getToken());
+        if (!response.data.isLogged) {
+          this.$router.push('/');
+        }
+    } catch (e) {
+      this.$router.push('/');
+    }  
     await this.loadQuestionByPosition(this.currentQuestionPosition);
   },
 
@@ -48,6 +58,7 @@ export default {
       }
       else{
         await this.endQuiz();
+        this.$router.push('/home-page-logged');
       }
     },  
 
