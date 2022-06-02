@@ -37,6 +37,9 @@ export default {
   getAnswersOfQuestion(id) {
     return this.call("get", `questions/${id}/answers`);
   },
+  getAnswersOfQuestion(id) {
+    return this.call("get", `questions/${id}/answers`);
+  },
   login(passwordTest,username) {
     return this.call("post","login", {password : passwordTest, username : username});
   },

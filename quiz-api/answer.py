@@ -23,5 +23,6 @@ class Answer():
 		ret = []
 		for answer in answers:
 			ret.append(Answer.convertJsonToAnswer(answer).convertToJson())
+
 		return ret
 		

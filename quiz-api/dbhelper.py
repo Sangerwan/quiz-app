@@ -191,6 +191,22 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 
+			
+	def getQuestion(self, position):
+		query = (
+			f"SELECT * FROM questions WHERE position="+str(position)
+		)
+		curr = self.db_connection.cursor()
+		question_json = None
+		try:
+			curr.execute("begin")
+			curr.execute(query)
+			question_json = curr.fetchone()
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
 	def deleteParticipationsFromName(self, player_name):
 		query = (
 			f"DELETE FROM PARTICIPATIONS where player_name='"+player_name+"'"

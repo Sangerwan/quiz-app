@@ -73,8 +73,6 @@ def isLogged():
 			return {"isLogged": False}, 200
 	return '', 401 
 
-<<<<<<< HEAD
-=======
 @app.route('/questions', methods=['POST'])
 def AddQuestions():
 	try:
@@ -102,7 +100,6 @@ def AddQuestions():
 			return '', 200
 	except jwt_utils.JwtError as e:
 			return e.message, 401
->>>>>>> 085171996de268d2e9230d95d6e19b0454a443b2
 
 
 @app.route('/questions/<position>', methods=['DELETE'])
