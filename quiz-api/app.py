@@ -154,20 +154,21 @@ def AnswersToQuestion():
 		return 'Wrong Token / Format', 401
 	
 	try:
+		payload = request.get_json()
+		username = payload['playerName']
+		answersId = payload['answers']
 		#check if the token is valid
-		#if jwt_utils.decode_token(token) == "quiz-app-admin":
+		if jwt_utils.decode_token(token) == username:
 
 			dbHelper = DBHelper()
-			payload = request.get_json()
-			player_name = payload['playerName']
-			answersId = payload['answers']
+			
 			
 			questionsId = dbHelper.selectAllQuestionsId()
 			if (len(questionsId)!=len(answersId)):
 				return "Bad request", 400
 
 			#clean old participation
-			dbHelper.deleteParticipationsFromName(player_name)
+			dbHelper.deleteParticipationsFromName(username)
 
 			index=0
 			countPlayer=0
@@ -179,9 +180,9 @@ def AnswersToQuestion():
 					countPlayer+=1
 				else :
 					isAGoodAnswer = 'False'
-				dbHelper.insertParticipation(Participation(player_name,index,isAGoodAnswer))
+				dbHelper.insertParticipation(Participation(username,index,isAGoodAnswer))
 				index += 1
-			dbHelper.setScoreForName(player_name,countPlayer)
+			dbHelper.setScoreForName(username,countPlayer)
 
 			return '', 200
 	except jwt_utils.JwtError as e:
