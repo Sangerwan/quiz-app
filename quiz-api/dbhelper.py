@@ -107,23 +107,83 @@ class DBHelper:
 
 	def getIdGoodAnswerOfQuestion(self, id_question):
 		query = (
-			f"SELECT id FROM ANSWERS where questionID="+str(id_question) +" AND isCorrect='True'"
+			f"SELECT isCorrect FROM ANSWERS where questionID="+str(id_question)
 		)
 		curr = self.db_connection.cursor()
 		try :
-			result =[]
 			curr.execute("begin")
 			curr.execute(query)
-			for (id) in curr :
-				result.append(id[0])
+			index=1
+			result = -1
+			for (isCorrect) in curr :
+				if (isCorrect[0]=='True'):
+					result=index
+					break				
+				index+=1
 			
 			curr.execute("commit")
-			return result[0]
+			return result
 
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
 			return -1
+
+	def getScoreForName(self, player_name):
+		query = (
+			f"Select Score FROM PLAYERS WHERE Name='"+player_name + "'"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			result=curr[0][0]
+			curr.execute("commit")
+			return result
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+			return 0
+
+	def setScoreForName(self, player_name,score):
+		query = (
+			f"UPDATE PLAYERS SET Score='"+str(score)+"' WHERE Name='"+player_name + "'"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+	def deleteParticipationsFromName(self, player_name):
+		query = (
+			f"DELETE FROM PARTICIPATIONS where player_name='"+player_name+"'"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+	def deleteAllParticipations(self):
+		query = (
+			f"DELETE FROM PARTICIPATIONS"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
 
 	def selectParticipationsFromName(self, player_name):
 		query = (
@@ -180,6 +240,25 @@ class DBHelper:
 			curr.execute('rollback')
 			return []
 
+	def selectAllPlayersScore(self):
+		query = (
+			f"SELECT Score FROM PLAYERS"
+		)
+		curr = self.db_connection.cursor()
+		try :
+			result = []
+			curr.execute("begin")
+			curr.execute(query)
+			for (Score) in curr :
+				result.append(Score[0])
+			curr.execute("commit")
+			return result
+
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+			return []
+
 	def insertParticipation(self, participation: participation.Participation):
 		question_json = participation.convertToJson()
 		for idx, key in enumerate(question_json):
@@ -188,7 +267,7 @@ class DBHelper:
 				
 		query = (
 			f"INSERT INTO PARTICIPATIONS (player_name, answer_id, good_answer) VALUES"
-			f"('{question_json['player_name']}', '{question_json['id_question']}', '{question_json['id_question']}')"
+			f"('{question_json['player_name']}', '{question_json['id_question']}', '{question_json['isAGoodAnswer']}')"
 		)
 		curr = self.db_connection.cursor()
 		try :

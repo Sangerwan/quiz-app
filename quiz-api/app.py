@@ -17,14 +17,11 @@ def hello_world():
 @app.route('/quiz-info', methods=['GET'])
 def GetQuizInfo():
 
-	payload = request.get_json()
 	dbHelper = DBHelper()
-	names = dbHelper.selectAllPlayersName()
-	for name in names:
-		participations = dbHelper.countScoreFromName(name)
-		
+	scores=dbHelper.selectAllPlayersScore()		
+	numberQuestions = len(dbHelper.selectAllQuestionsId())
 
-	return {"size": 0, "scores": []}, 200
+	return {"size": numberQuestions, "scores": scores}, 200
 
 @app.route('/login', methods=['POST'])
 def Login():
@@ -101,11 +98,31 @@ def DeleteQuestions(id):
 		return e_base.message, 404
 
 
+@app.route('/participations', methods=['DELETE'])
+def DeleteParticipation():
+	try:
+		token = request.headers.get('Authorization') 
+		token = token.split(' ')[1]
+	except AttributeError as e:
+		return 'Wrong Token / Format', 401
+	
+	try:
+		#check if the token is valid
+		if jwt_utils.decode_token(token) == "quiz-app-admin":
+
+			dbHelper = DBHelper()
+			dbHelper.deleteAllParticipations()
+			return 'ok deleted', 204
+	except jwt_utils.JwtError as e:
+			return e.message, 401
+
+
+
 @app.route('/participations', methods=['POST'])
 def AnswersToQuestion():
 	try:
 		token = request.headers.get('Authorization')
-		#token = token.split('.')[1]
+		#token = token.split(' ')[1]
 	except AttributeError as e:
 		return 'Wrong Token / Format', 401
 	
@@ -119,25 +136,29 @@ def AnswersToQuestion():
 			answersId = payload['answers']
 			
 			questionsId = dbHelper.selectAllQuestionsId()
+			if (len(questionsId)!=len(answersId)):
+				return "Bad request", 400
+
+			#clean old participation
+			dbHelper.deleteParticipationsFromName(player_name)
+
 			index=0
+			countPlayer=0
 			for questionId in questionsId:
 				answerId = answersId[index]
 				indexOfGoodAnswer = dbHelper.getIdGoodAnswerOfQuestion(questionId)
-				isAGoodAnswer = (indexOfGoodAnswer==answerId)
-				dbHelper.insertParticipation(Participation(player_name,answerId,isAGoodAnswer))
+				if  (indexOfGoodAnswer==answerId) :
+					isAGoodAnswer = 'True'
+					countPlayer+=1
+				else :
+					isAGoodAnswer = 'False'
+				dbHelper.insertParticipation(Participation(player_name,index,isAGoodAnswer))
 				index += 1
+			dbHelper.setScoreForName(player_name,countPlayer)
 
 			return '', 200
 	except jwt_utils.JwtError as e:
 			return e.message, 401
-
-#payload = request.get_json()			
-#id_question=payload['id_question']
-#id_answer=payload['id_answer']
-
-#dbHelper = DBHelper()
-#result = dbHelper.getIdGoodAnswerOfQuestion(id_question)
-#isAGoodAnswer = (result==id_answer)
 
 
 if __name__ == "__main__":
