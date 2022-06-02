@@ -48,7 +48,7 @@ def Login():
 		passwordToFind = username_mdp[username]
 		
 	if(password == passwordToFind):
-		token = jwt_utils.build_token()
+		token = jwt_utils.build_token(username)
 		dbHelper = DBHelper()
 		dbHelper.insertPlayer(username)
 		return {"token": token}, 200

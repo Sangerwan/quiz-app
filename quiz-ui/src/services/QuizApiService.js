@@ -43,8 +43,8 @@ export default {
   isLogged(token){
     return this.call("get","is-logged",{},token);
   },
-  setParticipation(playerName,answers){
-    return this.call("post","participations",{playerName : playerName, answers : answers})
+  setParticipation(playerName,answers, token){
+    return this.call("post","participations",{playerName : playerName, answers : answers}, null,token)
   }
 
 };

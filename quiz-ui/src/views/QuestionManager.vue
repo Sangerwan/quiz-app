@@ -6,6 +6,7 @@
 
 <script>
 import quizApiService from "@/services/quizApiService";
+import ParticipationStorageService from "../services/ParticipationStorageService";
 import QuestionDisplay from "@/views/QuestionDisplay.vue";
 export default {
   components: {
@@ -17,6 +18,7 @@ export default {
       //possibleAnswers: [],
       currentQuestionPosition: 1,
       totalNumberOfQuestion: 10,
+      participation:[]
     };
   },
   async created() {
@@ -40,7 +42,7 @@ export default {
       //console.log(this.possibleAnswers[answerId]);
       //const isCorrect = this.possibleAnswers[answerId].isCorrect;
       //console.log("selected answer", this.possibleAnswers[answerId].text, "is", isCorrect);
-      
+      this.participation.push(answerId);
       if(this.currentQuestionPosition< this.totalNumberOfQuestion){
         await this.loadQuestionByPosition(++this.currentQuestionPosition);
       }
@@ -50,6 +52,8 @@ export default {
     },  
 
     async endQuiz() {
+      console.log(this.participation, "participation");
+      quizApiService.setParticipation(ParticipationStorageService.getPlayerName(), this.participation, ParticipationStorageService.getToken());
       console.log("end quiz");
     }
 
