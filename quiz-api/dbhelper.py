@@ -408,6 +408,26 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 
+	def getQuestion(self, position):
+		query = (
+			f"SELECT * FROM questions WHERE position="+str(position)
+		)
+		curr = self.db_connection.cursor()
+		question_json = None
+		try:
+			curr.execute("begin")
+			curr.execute(query)
+			question_json = curr.fetchone()
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+		
+		if question_json is None:
+			return None
+
+		questionWithAnswers = question.Question.convertJsonToQuestion(question_json)
+		questionWithAnswers.possibleAnswers = self.getAnswersOfQuestion(questionWithAnswers.id)
 
 	def decreaseQuestionPosition(self, start_position, end_position):
 		query = (
