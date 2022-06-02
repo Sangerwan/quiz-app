@@ -1,18 +1,28 @@
 <template>
-  <h1> {{ welcome_description }}</h1>
 
-  <h3>{{ score_description }}</h3>
-  <div>
-    <div>
-      <router-link to="/question-manager">Begin quiz !</router-link>
+  <div class="all">
+    <div class="right">
+      <p>User: {{username}}</p>
+      <p>Score: {{score}}</p>
+      <button @click="disconnect" class="buttonSimple">Disconnect</button>
     </div>
+    <div class="center">  
+      <div class="title">
+        <h1> {{ welcome_description }}</h1>
 
-    <div v-for="scoreEntry in registeredScores" v-bind:key="scoreEntry.date">
-      {{ scoreEntry.playerName }} - {{ scoreEntry.score }}
+        <h3>{{ score_description }}</h3>
+      </div>
+      
+      <div>
+        <div>
+          <button @click="beginQuiz" class="buttonSimple">Begin quiz !</button>
+        </div>
+
+        <div v-for="scoreEntry in registeredScores" v-bind:key="scoreEntry.date">
+          {{ scoreEntry.playerName }} - {{ scoreEntry.score }}
+        </div>        
+      </div>    
     </div>
-
-    <button @click="disconnect" class="buttonSimple">Disconnect</button>
-
   </div>
   
 </template>
@@ -39,9 +49,14 @@ export default {
         participationStorageService.savePlayerName(this.username);
         this.$router.push('/');        
       } catch (e) {
-
-      }
-      
+        console.log(e)
+      }      
+    },async beginQuiz() {
+      try {        
+        this.$router.push('/question-manager');        
+      } catch (e) {
+        console.log(e)
+      }      
     },
   },
   async created() {
@@ -72,4 +87,33 @@ export default {
 </script>
 
 <style>
+
+.title{
+  display: flex;
+  flex-direction: column;
+}
+.right {
+  display: flex;
+  justify-content: start;   
+  flex-direction: column;
+  background-color: goldenrod;
+  width: 20%;
+}
+.center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;  
+  width: 80%;
+  height: 100%;
+}
+
+.all{
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+
 </style>

@@ -1,8 +1,8 @@
 <template>
   <div class="newQuiz">
-    <h1>New Quiz</h1>
+    <h1>Connection / New User</h1>
 
-    <h3>Saisissez votre nom :</h3>
+    <h3>If your are a new user type the password you want to save</h3>
     <form>
       <div class="horizontalDiv">
         <label for="fname">Username</label>
@@ -15,10 +15,10 @@
       </div>     
     </form>
 
-    <button @click="connect" class="buttonSimple">Connect</button>
-
-    <p>{{ errorDetails }}</p> 
-
+    <div class="horizontalDiv">
+       <button @click="connect" class="buttonSimple">Connect</button>
+      <p>{{ errorDetails }}</p> 
+    </div>   
   </div>
 </template>
 
@@ -103,9 +103,9 @@ export default {
     transform: translateY(4px);
   }
 
-  input[type=text],
+  input[type=text],input[type=password],
   select {
-    width: 100%;
+    width: 50%;
     padding: 12px 20px;
     margin: 8px 0;
     display: inline-block;
@@ -115,7 +115,7 @@ export default {
   }
 
   .buttonSimple {
-    width: 30%;
+    width: 100%;
     background-color: #4CAF50;
     color: white;
     padding: 14px 20px;
@@ -139,11 +139,19 @@ export default {
 
   label {
     margin-right: 15px;
+    width: 30%;
+    font-family: Papyrus, Helvetica, sans-serif;
+    font-size: 30px;
   }
 
   div {
     border-radius: 5px;
     padding: 20px;
+  }
+
+  p{
+    font-family: "Times New Roman", Times, serif;
+    font-size: 20px;
   }
 
 }
