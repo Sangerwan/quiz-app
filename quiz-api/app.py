@@ -50,7 +50,8 @@ def Login():
 	if(password == passwordToFind):
 		token = jwt_utils.build_token(username)
 		dbHelper = DBHelper()
-		dbHelper.insertPlayer(username)
+		if isNewUser :
+			dbHelper.insertPlayer(username)
 		return {"token": token}, 200
 	return '', 401 
 
@@ -58,12 +59,13 @@ def Login():
 def isLogged():
 	try:
 		token = request.headers.get('Authorization')
-		token = token.split(',')[0]
+		token = token.split(' ')[1]
 	except AttributeError as e:
 		return {"isLogged": False}, 200
 	try:
 		#check if the token is valid
-		if jwt_utils.decode_token(token) == "quiz-app-admin":
+		payload = request.get_json()
+		if jwt_utils.decode_token(token) == payload["username"]:
 			return {"isLogged": True}, 200
 		else :
 			return {"isLogged": False}, 200
@@ -71,6 +73,36 @@ def isLogged():
 			return {"isLogged": False}, 200
 	return '', 401 
 
+<<<<<<< HEAD
+=======
+@app.route('/questions', methods=['POST'])
+def AddQuestions():
+	try:
+		token = request.headers.get('Authorization')
+		token = token.split(' ')[1]
+	except AttributeError as e:
+		return 'Wrong Token / Format', 401
+	
+	try:
+		#check if the token is valid
+		payload = request.get_json()
+		if jwt_utils.decode_token(token) == payload["username"]:
+
+			question = Question(payload['title'], payload['text'], payload['image'], payload['position'])
+			dbHelper = DBHelper()
+
+			dbHelper.insertQuestion(question, payload['possibleAnswers'])
+
+			# possibleAnswers = payload['possibleAnswers']
+
+			# for answer in possibleAnswers:
+			# 	answer = Answer(question.id, answer['text'], answer['isCorrect'])
+			# 	dbHelper.insertAnswer(answer)
+
+			return '', 200
+	except jwt_utils.JwtError as e:
+			return e.message, 401
+>>>>>>> 085171996de268d2e9230d95d6e19b0454a443b2
 
 
 @app.route('/questions/<position>', methods=['DELETE'])
@@ -84,7 +116,8 @@ def DeleteQuestions(position):
 	
 	try:
 		#check if the token is valid
-		if jwt_utils.decode_token(token) == "quiz-app-admin":
+		payload = request.get_json()
+		if jwt_utils.decode_token(token) == payload["username"]:
 
 			dbHelper = DBHelper()
 			dbHelper.deleteQuestion(position)
@@ -108,7 +141,8 @@ def DeleteParticipation():
 	
 	try:
 		#check if the token is valid
-		if jwt_utils.decode_token(token) == "quiz-app-admin":
+		payload = request.get_json()
+		if jwt_utils.decode_token(token) == payload["username"]:
 
 			dbHelper = DBHelper()
 			dbHelper.deleteAllParticipations()
@@ -122,13 +156,13 @@ def DeleteParticipation():
 def AnswersToQuestion():
 	try:
 		token = request.headers.get('Authorization')
-		#token = token.split(' ')[1]
+		token = token.split(' ')[1]
 	except AttributeError as e:
 		return 'Wrong Token / Format', 401
 	
 	try:
 		payload = request.get_json()
-		username = payload['playerName']
+		username = payload['username']
 		answersId = payload['answers']
 		#check if the token is valid
 		if jwt_utils.decode_token(token) == username:
