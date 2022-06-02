@@ -5,6 +5,7 @@
   </div>
 
   <router-link to="/start-new-quiz-page">Démarrer le quiz !</router-link>
+  <router-link to="/question-manager">Question Display</router-link>
 </template>
 
 <script>

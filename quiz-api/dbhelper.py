@@ -3,6 +3,7 @@ from ObjectNotExistException import ObjectNotExistException
 import question
 import answer
 import participation
+import json
 class DBHelper:
 	def __init__(self):
 		#création d'un objet connection
@@ -20,8 +21,6 @@ class DBHelper:
 
 		self.db_connection = db_connection
 
-		
-
 	def deleteAnswersOfQuestion(self,id_question):
 		query = (
 			f"DELETE FROM answers WHERE questionID="+id_question
@@ -34,7 +33,6 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
-
 		
 	def deleteQuestion(self,id_question):
 		querySel = (
@@ -66,36 +64,71 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 
-	def insertQuestion(self, question: question.Question):
+	def insertQuestion(self, question: question.Question, answers: list):
 		question_json = question.convertToJson()
 		for idx, key in enumerate(question_json):
 			if isinstance(question_json[key], str):
 				question_json[key] = question_json[key].replace("'", "''")
 				
 
+		position = question_json['position']
+
+		if self.getQuestion(position):
+			self.increaseQuestionPosition(position)
+
 		query = (
-			f"INSERT INTO questions (title, text, image, position) VALUES"
-			f"('{question_json['title']}', '{question_json['text']}', '{question_json['image']}', '{question_json['position']}')"
+			f"SELECT max(position) from questions"
 		)
-		curr = self.db_connection.cursor()
-		try :
+		
+		try:
+			curr = self.db_connection.cursor()
 			curr.execute("begin")
 			curr.execute(query)
+			max_position = curr.fetchone()[0]
 			curr.execute("commit")
-			question.id = curr.lastrowid
+			if max_position is None:
+				max_position = 0
+			else:
+				if question_json['position'] > max_position+1:
+					question_json['position'] = max_position
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
 
-	def insertAnswer(self, answer: answer.Answer):
-		answer_json = answer.convertToJson()
+
+
+
+
+		query = (
+			f"INSERT INTO questions (title, text, image, position) VALUES"
+			f"('{question_json['title']}', '{question_json['text']}', '{question_json['image']}', '{question_json['position']}')"
+		)
+
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			question.id = curr.lastrowid
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+		for answer in answers:
+			answer['questionID'] = question.id
+			self.insertAnswerJson(answer)
+		
+
+	def insertAnswerJson(self, answer_json: dict):
 		for idx, key in enumerate(answer_json):
 			if isinstance(answer_json[key], str):
 				answer_json[key] = answer_json[key].replace("'", "''")
+
 		query = (
 			f"INSERT INTO answers (questionID, text, isCorrect) VALUES"
 			f"('{answer_json['questionID']}', '{answer_json['text']}', '{answer_json['isCorrect']}')"
 		)
+
 		curr = self.db_connection.cursor()
 		try :
 			curr.execute("begin")
@@ -292,4 +325,57 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
+			
+	def getQuestion(self, position):
+		query = (
+			f"SELECT * FROM questions WHERE position="+str(position)
+		)
+		curr = self.db_connection.cursor()
+		question_json = None
+		try:
+			curr.execute("begin")
+			curr.execute(query)
+			question_json = curr.fetchone()
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+		
+		if question_json is None:
+			return None
 
+		questionWithAnswers = question.Question.convertJsonToQuestion(question_json)
+		questionWithAnswers.possibleAnswers = self.getAnswersOfQuestion(questionWithAnswers.id)
+
+		return questionWithAnswers
+
+	def getAnswersOfQuestion(self, id):
+		query = (
+			f"SELECT * FROM answers WHERE questionID="+str(id)
+		)
+		curr = self.db_connection.cursor()
+		try:
+			curr.execute("begin")
+			curr.execute(query)
+			answers_list = curr.fetchall()
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+		if answers_list is None:
+			return None
+		return answer.Answer.convertListOfAnswersToJson(answers_list)
+
+	def increaseQuestionPosition(self, position):
+		query = (
+			f"UPDATE questions SET position=position+1 WHERE position>="+str(position)
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')

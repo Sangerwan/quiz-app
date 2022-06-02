@@ -32,7 +32,10 @@ export default {
     return this.call("get", "quiz-info");
   },
   getQuestion(position) {
-    // not implemented
+    return this.call("get", `questions/${position}`);
+  },
+  getAnswersOfQuestion(id) {
+    return this.call("get", `questions/${id}/answers`);
   },
   login(passwordTest,username) {
     return this.call("post","login", {password : passwordTest, username : username});

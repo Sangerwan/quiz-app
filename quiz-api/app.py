@@ -57,7 +57,7 @@ def isLogged():
 	return '', 401 
 
 @app.route('/questions', methods=['POST'])
-def SetQuestions():
+def AddQuestions():
 	try:
 		token = request.headers.get('Authorization')
 		token = token.split(' ')[1]
@@ -71,18 +71,22 @@ def SetQuestions():
 			payload = request.get_json()
 			question = Question(payload['title'], payload['text'], payload['image'], payload['position'])
 			dbHelper = DBHelper()
-			dbHelper.insertQuestion(question)
-			possibleAnswers = payload['possibleAnswers']
-			for answer in possibleAnswers:
-				answer = Answer(question.id, answer['text'], answer['isCorrect'])
-				dbHelper.insertAnswer(answer)
+
+			dbHelper.insertQuestion(question, payload['possibleAnswers'])
+
+			# possibleAnswers = payload['possibleAnswers']
+
+			# for answer in possibleAnswers:
+			# 	answer = Answer(question.id, answer['text'], answer['isCorrect'])
+			# 	dbHelper.insertAnswer(answer)
+
 			return '', 200
 	except jwt_utils.JwtError as e:
 			return e.message, 401
 
 
-@app.route('/questions/<id>', methods=['DELETE'])
-def DeleteQuestions(id):
+@app.route('/questions/<position>', methods=['DELETE'])
+def DeleteQuestions(position):
 	try:
 		token = request.headers.get('Authorization')
 		#token = token.split(' ')[1]
@@ -95,8 +99,8 @@ def DeleteQuestions(id):
 		if jwt_utils.decode_token(token) == "quiz-app-admin":
 
 			dbHelper = DBHelper()
-			dbHelper.deleteQuestion(id)
-			dbHelper.deleteAnswersOfQuestion(id)				
+			dbHelper.deleteQuestion(position)
+			dbHelper.deleteAnswersOfQuestion(position)				
 			return '', 200
 	except jwt_utils.JwtError as e:
 		return e.message, 401
@@ -167,6 +171,40 @@ def AnswersToQuestion():
 			return '', 200
 	except jwt_utils.JwtError as e:
 			return e.message, 401
+@app.route('/questions/<position>', methods=['GET'])
+def GetQuestion(position):
+	print("GetQuestion")
+	# try:
+	# 	token = request.headers.get('Authorization')
+	# 	#token = token.split(' ')[1]
+	# 	token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTQwMDUzNzEsImlhdCI6MTY1NDAwMTc3MSwic3ViIjoicXVpei1hcHAtYWRtaW4ifQ.VbuZl12E0bXjI6GEsizjnQIdSesxlnLTF9OlmBFvYN4"
+	# except AttributeError as e:
+	# 	return 'Wrong Token / Format', 401
+	
+	# try:
+	# 	#check if the token is valid
+	# 	if jwt_utils.decode_token(token) == "quiz-app-admin":
+
+	dbHelper = DBHelper()
+	question = dbHelper.getQuestion(position)
+	ret = question.convertToJson()
+	return ret, 200
+	# except jwt_utils.JwtError as e:
+	# 	return e.message, 401
+	# except ObjectNotExistException as e_custom:	
+	# 	return e_custom.message, 404
+	# except Exception as e_base:	
+	# 	return e_base.message, 404
+
+@app.route('/questions/<position>/answers', methods=['GET'])
+def getAnswersOfQuestion(position):
+
+	dbHelper = DBHelper()
+	answers = dbHelper.getAnswersOfQuestion(position)
+	for key in answers:
+		answers[key].pop('questionID', None)
+		answers[key].pop('isCorrect', None)
+	return answers, 200
 
 
 if __name__ == "__main__":
