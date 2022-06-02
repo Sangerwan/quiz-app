@@ -1,3 +1,4 @@
+from typing import Dict
 from flask import Flask, request
 from flask_cors import CORS
 from ObjectNotExistException import ObjectNotExistException
@@ -8,6 +9,8 @@ from participation import Participation
 from dbhelper import DBHelper
 app = Flask(__name__)
 CORS(app)
+
+username_mdp = {"admin": "Vive l'ESIEE !"}
 
 @app.route('/')
 def hello_world():
@@ -30,9 +33,21 @@ def Login():
 		username =payload["username"]
 	except Exception as e :
 		#No username
-		username="random"
-			
-	if(payload["password"] == "Vive l'ESIEE !"):
+		username="admin"
+
+	password=payload["password"]
+	isNewUser=False
+	passwordToFind=""
+	try :#check if it's a new user or not
+		passwordToFind = username_mdp[username]
+	except Exception as e : #New user
+		isNewUser=True
+	
+	if isNewUser :
+		username_mdp[username]=password
+		passwordToFind = username_mdp[username]
+		
+	if(password == passwordToFind):
 		token = jwt_utils.build_token()
 		dbHelper = DBHelper()
 		dbHelper.insertPlayer(username)

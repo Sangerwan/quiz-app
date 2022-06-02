@@ -16,7 +16,7 @@ class JwtError(Exception):
         super().__init__(self.message)
 
 
-def build_token():
+def build_token(username):
     """
     Generates the Auth Token
     :return: string
@@ -25,7 +25,7 @@ def build_token():
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=expiration_in_seconds),
             'iat': datetime.datetime.utcnow(),
-            'sub': 'quiz-app-admin'
+            'sub': username
         }
         return jwt.encode(
             payload,
