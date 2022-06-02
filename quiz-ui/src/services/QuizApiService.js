@@ -9,7 +9,7 @@ export default {
   async call(method, resource, data = null, token = null) {
     var headers = {
       "Content-Type": "application/json",
-      "Authorization" : token
+      "Authorization" : ""
     };
     if (token != null) {
       headers.authorization = "Bearer " + token;

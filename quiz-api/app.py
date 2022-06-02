@@ -59,7 +59,7 @@ def Login():
 def isLogged():
 	try:
 		token = request.headers.get('Authorization')
-		token = token.split(',')[0]
+		token = token.split(' ')[1]
 	except AttributeError as e:
 		return {"isLogged": False}, 200
 	try:
