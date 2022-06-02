@@ -442,7 +442,7 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 
-	def updateQuestion(self, old_position :int ,question: question.Question, answers: list):
+	def updateQuestion(self, old_position :int ,question: question.Question):
 		new_position = question.position
 		if new_position > old_position:
 			self.decreaseQuestionPosition(old_position, new_position)

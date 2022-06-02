@@ -275,7 +275,7 @@ def PutQuestion(position):
 			question = Question(payload['title'], payload['text'], payload['image'], payload['position'])
 			dbHelper = DBHelper()
 
-			dbHelper.insertQuestion(question, payload['possibleAnswers'])
+			dbHelper.updateQuestion(position, question)
 
 			# possibleAnswers = payload['possibleAnswers']
 
