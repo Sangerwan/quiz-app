@@ -34,28 +34,29 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 		
-	def deleteQuestion(self,id_question):
+	def deleteQuestion(self,position):
+		id=-1
 		querySel = (
-			f"SELECT id FROM questions WHERE id="+id_question
+			f"SELECT id FROM questions WHERE position={position}"
 		)
-		queryDel = (
-			f"DELETE FROM questions WHERE id="+id_question
-		)
+
 		curr = self.db_connection.cursor()
-		len_select=0
 		try :
 			curr.execute("begin")
 			curr.execute(querySel)
-			len_select=len(curr.fetchall())			
+			id=curr.fetchone()[0]		
 			curr.execute("commit")
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
 			return
 
-		if len_select==0:
+		if id==-1:
 			raise ObjectNotExistException() 
 
+		queryDel = (
+			f"DELETE FROM questions WHERE id={id}"
+		)
 		try :
 			curr.execute("begin")
 			curr.execute(queryDel)
@@ -63,6 +64,23 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
+
+		self.decreaseQuestionPositionFromPosition(position)
+
+		queryDelAnswer = (
+			f"DELETE FROM answers WHERE questionID={id}"
+		)
+		
+		try :
+			curr.execute("begin")
+			curr.execute(queryDelAnswer)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+		
+
 
 	def insertQuestion(self, question: question.Question, answers: list):
 		question_json = question.convertToJson()
@@ -74,7 +92,7 @@ class DBHelper:
 		position = question_json['position']
 
 		if self.getQuestion(position):
-			self.increaseQuestionPosition(position)
+			self.increaseQuestionPositionFromPosition(position)
 
 		query = (
 			f"SELECT max(position) from questions"
@@ -207,6 +225,9 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
+		if question_json is None:
+			raise ObjectNotExistException
+		return question_json
 
 	def deleteParticipationsFromName(self, player_name):
 		query = (
@@ -384,7 +405,7 @@ class DBHelper:
 			return None
 		return answer.Answer.convertListOfAnswersToJson(answers_list)
 
-	def increaseQuestionPosition(self, position):
+	def increaseQuestionPositionFromPosition(self, position):
 		query = (
 			f"UPDATE questions SET position=position+1 WHERE position>="+str(position)
 		)
@@ -445,15 +466,29 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 
-	def updateQuestion(self, old_position :int ,question: question.Question):
-		new_position = question.position
+	def decreaseQuestionPositionFromPosition(self, position):
+		query = (
+			f"UPDATE questions SET position=position-1 WHERE position>="+str(position)
+		)
+		curr = self.db_connection.cursor()
+		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+	def UpdateQuestion(self, new_position :int ,question: question.Question):
+		questionID = self.getQuestionID(question)
+		old_position = question.position
 		if new_position > old_position:
 			self.decreaseQuestionPosition(old_position, new_position)
 		else:
-			self.increaseQuestionPosition(question.position, old_position)
-		questionID = self.getQuestionID(question)
+			self.increaseQuestionPosition(new_position, old_position)
+		
 		query = (
-			f"UPDATE questions SET position='{question.position}' WHERE id='{questionID}"
+			f"UPDATE questions SET position={new_position} WHERE id={questionID}"
 		)
 		try:
 			curr = self.db_connection.cursor()
@@ -465,10 +500,15 @@ class DBHelper:
 			curr.execute('rollback')
 
 	def getQuestionID(self, question: question.Question):
+		question_json = question.convertToJson()
+		for idx, key in enumerate(question_json):
+			if isinstance(question_json[key], str):
+				question_json[key] = question_json[key].replace("'", "''")
 		query = (
-			f"SELECT id FROM questions WHERE position='{question.position}' AND text='{question.text}' AND title='{question.title}' AND image='{question.image}'"
+			f"SELECT id FROM questions WHERE position={question_json['position']} AND text='{question_json['text']}' AND title='{question_json['title']}' AND image='{question_json['image']}'"
 		)
 		curr = self.db_connection.cursor()
+		question_id = -1
 		try :
 			curr.execute("begin")
 			curr.execute(query)
