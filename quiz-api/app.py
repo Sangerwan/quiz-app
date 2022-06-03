@@ -258,6 +258,15 @@ def GetQuestion(position):
 	except Exception as e_base:	
 		return e_base.message, 404
 
+
+@app.route('/questions-count', methods=['GET'])
+def countQuestions():
+
+	dbHelper = DBHelper()
+	count = dbHelper.countQuestions()	
+	return  {"count": count}, 200
+
+
 @app.route('/questions/<position>/answers', methods=['GET'])
 def getAnswersOfQuestion(position):
 

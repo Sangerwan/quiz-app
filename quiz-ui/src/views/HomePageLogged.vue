@@ -76,7 +76,7 @@ export default {
             this.welcome_description="Welcome back "+this.username+" !"
           } else{
             this.score_description="Play your first game now !"
-            this.welcome_description="Welcome "+this.username+" !"
+            this.welcome_description="Welcome "+this.username
           }
         }          
       } catch (e) {

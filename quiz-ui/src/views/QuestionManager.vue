@@ -1,7 +1,7 @@
 <template>
   <h3>Question {{ currentQuestionPosition }} / {{ totalNumberOfQuestion }}</h3>
   <QuestionDisplay :question="currentQuestion" @answer-selected="answerClickedHandler" />
-
+  <h3>{{errorMessage}}</h3>
 </template>
 
 <script>
@@ -18,7 +18,8 @@ export default {
       //possibleAnswers: [],
       currentQuestionPosition: 1,
       totalNumberOfQuestion: 10,
-      participation:[]
+      participation:[],
+      errorMessage:""
     };
   },
   async created() {
@@ -32,7 +33,13 @@ export default {
     } catch (e) {
       this.$router.push('/');
     }  
-    await this.loadQuestionByPosition(this.currentQuestionPosition);
+    const responseCount = await quizApiService.getQuestionCount()
+    this.totalNumberOfQuestion = responseCount.data.count
+    if (this.totalNumberOfQuestion==0){
+      this.errorMessage="There are no questions for the moment, please come back later"
+    }else{
+      await this.loadQuestionByPosition(this.currentQuestionPosition);
+    }    
   },
 
   methods: {

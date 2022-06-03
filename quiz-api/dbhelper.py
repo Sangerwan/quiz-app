@@ -492,8 +492,25 @@ class DBHelper:
 			self.insertAnswerJson(answer)
 		
 		
+	def countQuestions(self):
+		query = (
+			f"SELECT id FROM questions"
+		)
+		curr = self.db_connection.cursor()
+		try:
+			questionsID=[]
+			curr.execute("begin")
+			curr.execute(query)
+			questionsID = curr.fetchone()
+			curr.execute("commit")
+			if questionsID is None:
+				return 0
+			return len(questionsID)
 
-
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+			return 0
 
 
 
