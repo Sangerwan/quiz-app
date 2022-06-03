@@ -23,19 +23,18 @@ class DBHelper:
 
 	def deleteAnswersOfQuestion(self,id_question):
 		query = (
-			f"DELETE FROM answers WHERE questionID="+id_question
+			f"DELETE FROM answers WHERE questionID="+str(id_question)
 		)
 		curr = self.db_connection.cursor()
 		try :
 			curr.execute("begin")
-			print(curr.execute(query))
+			curr.execute(query)
 			curr.execute("commit")
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
 		
 	def deleteQuestion(self,position):
-		id=-1
 		querySel = (
 			f"SELECT id FROM questions WHERE position={position}"
 		)
@@ -44,15 +43,31 @@ class DBHelper:
 		try :
 			curr.execute("begin")
 			curr.execute(querySel)
-			id=curr.fetchone()[0]		
+			id=curr.fetchone()		
 			curr.execute("commit")
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
 			return
 
-		if id==-1:
-			raise ObjectNotExistException() 
+		if id is None:
+			raise ObjectNotExistException
+
+		id = id[0]
+
+
+		queryDelAnswer = (
+			f"DELETE FROM answers WHERE questionID={id}"
+		)
+		
+		try :
+			curr.execute("begin")
+			curr.execute(queryDelAnswer)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
 
 		queryDel = (
 			f"DELETE FROM questions WHERE id={id}"
@@ -67,17 +82,7 @@ class DBHelper:
 
 		self.decreaseQuestionPositionFromPosition(position)
 
-		queryDelAnswer = (
-			f"DELETE FROM answers WHERE questionID={id}"
-		)
-		
-		try :
-			curr.execute("begin")
-			curr.execute(queryDelAnswer)
-			curr.execute("commit")
-		except Exception as e:
-			print(e)
-			curr.execute('rollback')
+
 
 		
 
@@ -112,10 +117,6 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
-
-
-
-
 
 		query = (
 			f"INSERT INTO questions (title, text, image, position) VALUES"
@@ -198,8 +199,10 @@ class DBHelper:
 			return -1
 
 	def setScoreForName(self, player_name,score):
+
+
 		query = (
-			f"UPDATE PLAYERS SET Score='"+str(score)+"' WHERE Name='"+player_name + "'"
+			f"REPLACE INTO PLAYERS (Name, Score) VALUES ('"+player_name+"', '"+str(score)+"')"
 		)
 		curr = self.db_connection.cursor()
 		try :
@@ -209,25 +212,6 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
-
-			
-	def getQuestion(self, position):
-		query = (
-			f"SELECT * FROM questions WHERE position="+str(position)
-		)
-		curr = self.db_connection.cursor()
-		question_json = None
-		try:
-			curr.execute("begin")
-			curr.execute(query)
-			question_json = curr.fetchone()
-			curr.execute("commit")
-		except Exception as e:
-			print(e)
-			curr.execute('rollback')
-		if question_json is None:
-			raise ObjectNotExistException
-		return question_json
 
 	def deleteParticipationsFromName(self, player_name):
 		query = (
@@ -248,6 +232,18 @@ class DBHelper:
 		)
 		curr = self.db_connection.cursor()
 		try :
+			curr.execute("begin")
+			curr.execute(query)
+			curr.execute("commit")
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+
+		query = (
+			f"DELETE FROM PLAYERS"
+		)
+
+		try:
 			curr.execute("begin")
 			curr.execute(query)
 			curr.execute("commit")
@@ -313,15 +309,16 @@ class DBHelper:
 
 	def selectAllPlayersScore(self):
 		query = (
-			f"SELECT Score FROM PLAYERS"
+			f"SELECT * FROM PLAYERS ORDER BY Score DESC"
 		)
 		curr = self.db_connection.cursor()
 		try :
 			result = []
 			curr.execute("begin")
 			curr.execute(query)
-			for (Score) in curr :
-				result.append(Score[0])
+			for (player_name, score) in curr :
+				result.append({'playerName':player_name, 'score':score})
+
 			curr.execute("commit")
 			return result
 
@@ -430,29 +427,6 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 
-	def getQuestion(self, position):
-		query = (
-			f"SELECT * FROM questions WHERE position="+str(position)
-		)
-		curr = self.db_connection.cursor()
-		question_json = None
-		try:
-			curr.execute("begin")
-			curr.execute(query)
-			question_json = curr.fetchone()
-			curr.execute("commit")
-		except Exception as e:
-			print(e)
-			curr.execute('rollback')
-		
-		if question_json is None:
-			return None
-
-		questionWithAnswers = question.Question.convertJsonToQuestion(question_json)
-		questionWithAnswers.possibleAnswers = self.getAnswersOfQuestion(questionWithAnswers.id)
-
-		return questionWithAnswers
-
 	def decreaseQuestionPosition(self, start_position, end_position):
 		query = (
 			f"UPDATE questions SET position=position-1 WHERE position>"+str(start_position)+" AND position<="+str(end_position)
@@ -479,16 +453,28 @@ class DBHelper:
 			print(e)
 			curr.execute('rollback')
 
-	def UpdateQuestion(self, new_position :int ,question: question.Question):
-		questionID = self.getQuestionID(question)
+	def UpdateQuestion(self, new_position :int ,question: question.Question, answers: list):
+		
+		questionID = self.getQuestionIdFromPosition(question.position)
+		if questionID is None:
+			raise ObjectNotExistException("Question not found")
+			
 		old_position = question.position
 		if new_position > old_position:
 			self.decreaseQuestionPosition(old_position, new_position)
 		else:
 			self.increaseQuestionPosition(new_position, old_position)
 		
+		question_json = question.convertToJson()
+		for idx, key in enumerate(question_json):
+			if isinstance(question_json[key], str):
+				question_json[key] = question_json[key].replace("'", "''")
+
+
 		query = (
-			f"UPDATE questions SET position={new_position} WHERE id={questionID}"
+			f"UPDATE questions SET "
+			f"title='{question_json['title']}', text='{question_json['text']}', image='{question_json['image']}', position={new_position} "
+			f"WHERE id={questionID}"
 		)
 		try:
 			curr = self.db_connection.cursor()
@@ -498,6 +484,40 @@ class DBHelper:
 		except Exception as e:
 			print(e)
 			curr.execute('rollback')
+
+		self.deleteAnswersOfQuestion(questionID)
+
+		for answer in answers:
+			answer['questionID'] = questionID
+			self.insertAnswerJson(answer)
+		
+		
+
+
+
+
+
+
+	def getQuestionIdFromPosition(self, position):
+		query = (
+			f"SELECT id FROM questions WHERE position={position}"
+		)
+		curr = self.db_connection.cursor()
+		try:
+			curr.execute("begin")
+			curr.execute(query)
+			question_id = curr.fetchone()
+			if question_id is None:
+				return None
+			question_id = question_id[0]
+			curr.execute("commit")
+			return question_id
+
+		except Exception as e:
+			print(e)
+			curr.execute('rollback')
+		
+		
 
 	def getQuestionID(self, question: question.Question):
 		question_json = question.convertToJson()

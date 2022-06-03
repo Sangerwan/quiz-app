@@ -153,57 +153,61 @@ def DeleteParticipation():
 	
 	try:
 		#check if the token is valid
-		payload = request.get_json()
-		if jwt_utils.decode_token(token) == payload["username"]:
+		# payload = request.get_json()
+		# if jwt_utils.decode_token(token) == payload["username"]:
 
-			dbHelper = DBHelper()
-			dbHelper.deleteAllParticipations()
-			return 'ok deleted', 204
+		dbHelper = DBHelper()
+		dbHelper.deleteAllParticipations()
+		return 'ok deleted', 204
 	except jwt_utils.JwtError as e:
 			return e.message, 401
+	except Exception as e:
+		return e.message, 401
 
 
 
 @app.route('/participations', methods=['POST'])
 def AnswersToQuestion():
-	try:
-		token = request.headers.get('Authorization')
-		token = token.split(' ')[1]
-	except AttributeError as e:
-		return 'Wrong Token / Format', 401
+	# try:
+	# 	token = request.headers.get('Authorization')
+	# 	token = token.split(' ')[1]
+	# except AttributeError as e:
+	# 	return 'Wrong Token / Format', 401
 	
 	try:
 		payload = request.get_json()
-		username = payload['username']
+		username = payload['playerName']
 		answersId = payload['answers']
 		#check if the token is valid
-		if jwt_utils.decode_token(token) == username:
+		# if jwt_utils.decode_token(token) == username:
 
-			dbHelper = DBHelper()
-			
-			
-			questionsId = dbHelper.selectAllQuestionsId()
-			if (len(questionsId)!=len(answersId)):
-				return "Bad request", 400
+		dbHelper = DBHelper()
+		
+		
+		questionsId = dbHelper.selectAllQuestionsId()
+		if (len(questionsId)!=len(answersId)):
+			return "Bad request", 400
 
-			#clean old participation
-			dbHelper.deleteParticipationsFromName(username)
+		#clean old participation
+		dbHelper.deleteParticipationsFromName(username)
 
-			index=0
-			countPlayer=0
-			for questionId in questionsId:
-				answerId = answersId[index]
-				indexOfGoodAnswer = dbHelper.getIdGoodAnswerOfQuestion(questionId)
-				if  (indexOfGoodAnswer==answerId) :
-					isAGoodAnswer = 'True'
-					countPlayer+=1
-				else :
-					isAGoodAnswer = 'False'
-				dbHelper.insertParticipation(Participation(username,index,isAGoodAnswer))
-				index += 1
-			dbHelper.setScoreForName(username,countPlayer)
+		index=0
+		countPlayer=0
+		for questionId in questionsId:
+			answerId = answersId[index]
+			indexOfGoodAnswer = dbHelper.getIdGoodAnswerOfQuestion(questionId)
+			if  (indexOfGoodAnswer==answerId) :
+				isAGoodAnswer = 'True'
+				countPlayer+=1
+			else :
+				isAGoodAnswer = 'False'
+			dbHelper.insertParticipation(Participation(username,index,isAGoodAnswer))
+			index += 1
+		dbHelper.setScoreForName(username,countPlayer)
 
-			return '', 200
+		result = {"playerName": username, "score": countPlayer}
+
+		return result, 200
 	except jwt_utils.JwtError as e:
 			return e.message, 401
 
@@ -281,7 +285,7 @@ def PutQuestion(position):
 			question = Question(payload['title'], payload['text'], payload['image'], int(position))
 			dbHelper = DBHelper()
 
-			dbHelper.UpdateQuestion(new_position, question)
+			dbHelper.UpdateQuestion(new_position, question, payload['possibleAnswers'])
 
 			# possibleAnswers = payload['possibleAnswers']
 
@@ -290,6 +294,8 @@ def PutQuestion(position):
 			# 	dbHelper.insertAnswer(answer)
 
 			return '', 200
+	except ObjectNotExistException as e_custom:	
+		return e_custom.message, 404
 	except jwt_utils.JwtError as e:
 			return e.message, 401
 
