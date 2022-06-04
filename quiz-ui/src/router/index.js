@@ -3,7 +3,7 @@ import HomePage from '../views/HomePage.vue'
 import NewQuizPage from '../views/NewQuizPage.vue'
 import Question from '../views/NewQuizPage.vue'
 import QuestionManager from '../views/QuestionManager.vue'
-import LogginPage from '../views/LogginPage.vue'
+import LoginPage from '../views/LoginPage.vue'
 import HomePageLogged from '../views/HomePageLogged.vue'
 
 const router = createRouter({
@@ -20,9 +20,9 @@ const router = createRouter({
       component: HomePageLogged
     },
     {
-      path: '/loggin-page',
-      name: 'LogginPage',
-      component: LogginPage
+      path: '/login-page',
+      name: 'LoginPage',
+      component: LoginPage
     },
     {
       path: '/start-new-quiz-page',

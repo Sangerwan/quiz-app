@@ -50,3 +50,21 @@ def decode_token(auth_token):
         raise JwtError('Signature expired. Please log in again.')
     except jwt.InvalidTokenError as e:
         raise JwtError('Invalid token. Please log in again.')
+
+def encode_password(password):
+    payload = {
+        'password': password
+    }
+    encoded_password = jwt.encode(payload, secret, algorithm="HS256")
+    return encoded_password
+
+def check_password(password, encoded_password):
+    try:
+        payload = jwt.decode(encoded_password, secret, algorithms="HS256")
+        if password == payload['password']:
+            return True
+        return False
+    except jwt.ExpiredSignatureError:
+        return False
+    except jwt.InvalidTokenError as e:
+        return False

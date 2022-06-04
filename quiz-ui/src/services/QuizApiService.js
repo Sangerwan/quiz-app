@@ -9,10 +9,9 @@ export default {
   async call(method, resource, data = null, token = null) {
     var headers = {
       "Content-Type": "application/json",
-      "Authorization" : ""
     };
     if (token != null) {
-      headers.authorization = token;
+      headers.authorization = "Bearer " + token;
     }
 
     return instance({
@@ -41,9 +40,6 @@ export default {
     return this.call("post","login", {password : passwordTest, username : username});
   },
   isLogged(username,token){
-    if (username==""){
-      return {"isLogged": False}, 200
-    }
     return this.call("get",`is-logged/${username}`,null,token);
   },
   setParticipation(username,answers, token){

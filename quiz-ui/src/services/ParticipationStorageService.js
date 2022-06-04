@@ -23,5 +23,10 @@ export default {
   },
   getParticipationScore() {
     return window.localStorage.getItem("participationScore");
+  },
+  disconnect() {
+    window.localStorage.removeItem("playerName");
+    window.localStorage.removeItem("token");
+    window.localStorage.removeItem("participationScore");
   }
 };

@@ -18,8 +18,8 @@ export default {
     const instance = await quizApiService.getQuizInfo();   
      try {    
        const username =   participationStorageService.getPlayerName()
-       if (username==null || username == ""){
-          this.$router.push('/loggin-page');
+       if (!username){
+          this.$router.push('/login-page');
        }
         const response =  await quizApiService.isLogged(
           participationStorageService.getPlayerName(),
@@ -28,7 +28,7 @@ export default {
           this.$router.push('/home-page-logged');
           this.errorDetails=participationStorageService.getPlayerName()+" is logged";
         }else{
-          this.$router.push('/loggin-page');
+          this.$router.push('/login-page');
           this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
         }          
       } catch (e) {

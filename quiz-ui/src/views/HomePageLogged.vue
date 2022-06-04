@@ -45,8 +45,7 @@ export default {
   methods: {
     async disconnect() {
       try {        
-        participationStorageService.saveToken("");
-        participationStorageService.savePlayerName(this.username);
+        participationStorageService.disconnect();
         this.$router.push('/');        
       } catch (e) {
         console.log(e)
@@ -75,6 +74,7 @@ export default {
             this.score_description="Your last score was "+this.score
             this.welcome_description="Welcome back "+this.username+" !"
           } else{
+            this.score = 0
             this.score_description="Play your first game now !"
             this.welcome_description="Welcome "+this.username
           }
