@@ -58,20 +58,20 @@ def login():
 @app.route('/is-logged/<username>', methods=['GET'])
 def is_logged(username):
     if username == 'null':
-        return {"isLogged": False}, 200
+        return {"isLogged": False}, 401
     try:
         token = request.headers.get('Authorization')
         token = check_token(token)
     except AttributeError as e:
-        return {"isLogged": False}, 200
+        return {"isLogged": False}, 401
     try:
         # check if the token is valid
         if jwt_utils.decode_token(token) == username:
             return {"isLogged": True}, 200
         else:
-            return {"isLogged": False}, 200
+            return {"isLogged": False}, 401
     except jwt_utils.JwtError as e:
-        return {"isLogged": False}, 200
+        return {"isLogged": False}, 401
     except Exception as e:
         return '', 401
 
@@ -118,6 +118,21 @@ def get_question(position):
         return e_custom.message, 404
     except Exception as e_base:
         return e_base.message, 404
+
+@app.route('/questions', methods=['GET'])
+def get_questions():
+    try:
+        dbHelper = DBHelper()
+        questions = dbHelper.get_questions()
+
+        if questions is None:
+            return '', 404
+
+    except ObjectNotExistException as e_custom:
+        return e_custom.message, 404
+    except Exception as e_base:
+        return e_base.message, 404
+    return {"questions": questions}, 200
 
 @app.route('/questions/<position>', methods=['DELETE'])
 def delete_quetion(position):
@@ -188,29 +203,28 @@ def set_participation():
 
             dbHelper = DBHelper()
 
-            questionsId = dbHelper.get_questions_id()
-            if (len(questionsId) != len(answersId)):
+            question_count = dbHelper.get_question_count()
+
+            if (question_count != len(answersId)):
                 return "Bad request", 400
 
             # clean old participation
             dbHelper.delete_participation(username)
 
-            index = 0
-            countPlayer = 0
-            for questionId in questionsId:
-                answerId = answersId[index]
-                indexOfGoodAnswer = dbHelper.get_correct_answer_index(questionId)
-                if (indexOfGoodAnswer == answerId):
-                    isAGoodAnswer = 'True'
-                    countPlayer += 1
-                else:
-                    isAGoodAnswer = 'False'
-                dbHelper.add_participation(
-                    Participation(username, index, isAGoodAnswer))
-                index += 1
-            dbHelper.set_score(username, countPlayer)
 
-            result = {"username": username, "score": countPlayer}
+            correct_participation = dbHelper.get_correct_participation()
+            if correct_participation is None:
+                return "Bad request", 400
+                
+            score = 0
+
+            for i in range(question_count):
+                if correct_participation[i] == answersId[i]:
+                    score += 1
+
+            dbHelper.set_score(username, score)
+
+            result = {"username": username, "score": score}
 
             return result, 200
         else:
@@ -266,6 +280,8 @@ def get_score(username):
         if jwt_utils.decode_token(token) == username:
             dbHelper = DBHelper()
             score = dbHelper.get_score(username)
+            if score is None:
+                return '', 404
             return {"score": score}, 200
         else:
             return '', 401
@@ -282,7 +298,7 @@ def get_answer(position):
     for key in answers:
         answers[key].pop('questionID', None)
         answers[key].pop('isCorrect', None)
-    return answers, 200
+    return {"answers", answers}, 200
 
 if __name__ == "__main__":
     app.run()

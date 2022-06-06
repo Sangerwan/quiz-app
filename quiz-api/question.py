@@ -1,4 +1,4 @@
-
+import json
 class Question():
 	def __init__(self, title: str, text: str, image: str, position: int, id: int = None, possibleAnswers: list = []):
 		self.title = title
@@ -10,14 +10,22 @@ class Question():
 
 	def convertToJson(self):
 		return {
-			'title': self.title,
-			'text': self.text,
-			'image': self.image,
-			'position': self.position,
-			'possibleAnswers': self.possibleAnswers,
-			'id': self.id
+			"title": self.title,
+			"text": self.text,
+			"image": self.image,
+			"position": self.position,
+			"possibleAnswers": self.possibleAnswers,
+			"id": self.id
 		}
 
 	@staticmethod 
 	def convertJsonToQuestion(json):
 		return Question(json[0], json[1], json[2], json[3], json[4])
+
+	@staticmethod
+	def convertListOfQuestionsToJson(questions: list):
+		ret = []
+		for question in questions:
+			ret.append(question.convertToJson())
+
+		return ret

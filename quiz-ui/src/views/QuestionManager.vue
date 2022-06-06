@@ -65,14 +65,12 @@ export default {
       }
       else{
         await this.endQuiz();
-        this.$router.push('/home-page-logged');
       }
     },  
 
     async endQuiz() {
-      console.log(this.participation, "participation");
-      quizApiService.setParticipation(ParticipationStorageService.getPlayerName(), this.participation, ParticipationStorageService.getToken());
-      console.log("end quiz");
+      await quizApiService.setParticipation(ParticipationStorageService.getPlayerName(), this.participation, ParticipationStorageService.getToken());
+      this.$router.push('/Result');
     }
 
   }

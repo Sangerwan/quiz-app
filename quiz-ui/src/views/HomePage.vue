@@ -32,6 +32,7 @@ export default {
           this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
         }          
       } catch (e) {
+        this.$router.push('/login-page');
         this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
       }  
 

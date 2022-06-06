@@ -33,6 +33,15 @@ export default {
   getQuestion(position) {
     return this.call("get", `questions/${position}`);
   },
+  getQuestions() {
+    return this.call("get", "questions");
+  },
+  updateQuestion(id, data, token) {
+    return this.call("put", `/questions/${id}`, data, token);
+  },
+  deleteQuestion(id, token) {
+    return this.call("delete", `/questions/${id}`, null, token);
+  },
   getAnswersOfQuestion(id) {
     return this.call("get", `questions/${id}/answers`);
   },
@@ -50,6 +59,9 @@ export default {
   },
   getQuestionCount(){
     return this.call("get", `questions-count`);
+  },
+  addQuestion(data, token){
+    return this.call("post", "questions", data, token);
   }
 
 };

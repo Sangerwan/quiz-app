@@ -32,15 +32,15 @@ class DBHelper:
             if isinstance(question_json[key], str):
                 question_json[key] = question_json[key].replace("'", "''")                
 
-        position = question_json['position']
+        
 
-        if self.get_question(position):
-            self.increase_question_position_from_position(position)
+        if self.get_question(question_json['position']):
+            self.increase_question_position_from_position(question_json['position'])
 
         query = (
             f"SELECT max(position) from questions"
         )
-        
+        position = int(question_json['position'])
         try:
             curr = self.db_connection.cursor()
             curr.execute("begin")
@@ -50,8 +50,11 @@ class DBHelper:
             if max_position is None:
                 max_position = 0
             else:
-                if question_json['position'] > max_position+1:
-                    question_json['position'] = max_position
+                if position > max_position or position <= 0:
+                    position = max_position+1
+
+            question_json['position'] = position
+
         except Exception as e:
             print(e)
             curr.execute('rollback')
@@ -97,6 +100,34 @@ class DBHelper:
         questionWithAnswers.possibleAnswers = self.get_answer(questionWithAnswers.id)
 
         return questionWithAnswers
+    
+    def get_questions(self):
+        query = (
+            f"SELECT * FROM questions ORDER BY position"
+        )
+        curr = self.db_connection.cursor()
+        try :
+            question_list =[]
+            curr.execute("begin")
+            curr.execute(query)
+            for (id, title, text, image, position) in curr :
+                q = question.Question(id, title, text, image, position)
+                question_list.append(q)
+            curr.execute("commit")
+
+        except Exception as e:
+            print(e)
+            curr.execute('rollback')
+            return None
+
+        if len(question_list) == 0:
+            return None
+
+
+        for q in question_list:
+            q.possibleAnswers = self.get_answer(q.id)
+
+        return question.Question.convertListOfQuestionsToJson(question_list)
     
     def delete_question(self,position):
         querySel = (
@@ -154,6 +185,30 @@ class DBHelper:
             raise ObjectNotExistException("Question not found")
             
         old_position = question.position
+
+
+        query = (
+            f"SELECT max(position) from questions"
+        )
+
+        try:
+            curr = self.db_connection.cursor()
+            curr.execute("begin")
+            curr.execute(query)
+            max_position = curr.fetchone()[0]
+            curr.execute("commit")
+
+            if max_position is None:
+                max_position = 0
+            else:
+                if new_position > max_position or new_position <= 0:
+                    new_position = max_position
+
+        except Exception as e:
+            print(e)
+            curr.execute('rollback')
+
+
         if new_position > old_position:
             self.decrease_question_position(old_position, new_position)
         else:
@@ -400,8 +455,11 @@ class DBHelper:
         try :
             curr.execute("begin")
             curr.execute(query)
-            for (Score) in curr :
-                result=Score[0]
+            score = curr.fetchone()
+            if score is None:
+                return None
+
+            result=score[0]
             curr.execute("commit")
             return result
         except Exception as e:
@@ -462,6 +520,19 @@ class DBHelper:
             print(e)
             curr.execute('rollback')
 
+        query = (
+            f"UPDATE PLAYERS SET Score=-1 WHERE Name='{player_name}'"
+        )
+
+        try :
+            curr.execute("begin")
+            curr.execute(query)
+            curr.execute("commit")
+        except Exception as e:
+            print(e)
+            curr.execute('rollback')
+        
+
     def delete_participations(self):
         query = (
             f"DELETE FROM PARTICIPATIONS"
@@ -479,6 +550,10 @@ class DBHelper:
             f"DELETE FROM PLAYERS"
         )
 
+        query = (
+            f"UPDATE PLAYERS SET Score=-1"
+        )
+
         try:
             curr.execute("begin")
             curr.execute(query)
@@ -486,7 +561,50 @@ class DBHelper:
         except Exception as e:
             print(e)
             curr.execute('rollback')
-            
+    
+    def get_correct_participation(self):
+        query = (
+            f"SELECT id FROM QUESTIONS ORDER BY position ASC"
+        )
+        curr = self.db_connection.cursor()
+
+        list_question_id = []
+
+        try :
+            curr.execute("begin")
+            curr.execute(query)
+            list_question_id=curr.fetchall()
+            curr.execute("commit")
+        except Exception as e:
+            print(e)
+            curr.execute('rollback')
+            return None
+
+        list_correct_result = []
+
+        try:
+
+            for question in list_question_id:
+                question_id = str(question[0])
+                query = (
+                    f"SELECT isCorrect FROM ANSWERS where questionID="+question_id
+                )
+                curr.execute("begin")
+                curr.execute(query)
+                index = 1
+                for (isCorrect) in curr :
+                    if (isCorrect[0]=='True'):
+                        list_correct_result.append(index)
+                        break
+                    index+=1
+                curr.execute("commit")
+
+        except Exception as e:
+            print(e)
+            curr.execute('rollback')
+            return None
+        return list_correct_result
+
 
     ###
     # PLAYER

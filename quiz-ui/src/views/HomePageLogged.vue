@@ -37,7 +37,7 @@ export default {
     return {//rertourne des données réactives
       registeredScores : [],
       username : "",
-      score :-1,
+      score : "",
       score_description : "",
       welcome_description : ""
     };
@@ -64,10 +64,16 @@ export default {
         const response =  await quizApiService.isLogged(
           participationStorageService.getPlayerName(),
           participationStorageService.getToken());
+          
         if (!response.data.isLogged) {
           this.$router.push('/');
-        }else{
+        }
+        else{
           this.username=participationStorageService.getPlayerName();
+
+          if(this.username==="admin")
+            this.$router.push('/Admin');
+
           const result = await quizApiService.getScoreOfUser(this.username,participationStorageService.getToken())
           this.score = result.data.score
           if (this.score!=-1){
@@ -80,7 +86,7 @@ export default {
           }
         }          
       } catch (e) {
-        this.$router.push('/');
+        this.disconnect();
       }  
   }
 };

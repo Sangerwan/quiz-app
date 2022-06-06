@@ -6,9 +6,15 @@ import { RouterLink, RouterView } from 'vue-router'
   <div  class="main">
     <div class="head">
         <h1>Super Quizz</h1>
+
+        <div class="wrapper">
+          <RouterLink to="/Leaderboard">Leaderboard</RouterLink>
+        </div>
+
         <div class="wrapper">
           <RouterLink to="/">Home</RouterLink>
         </div>
+
         <div class="wrapper">
           <RouterLink to="/about">About</RouterLink>
         </div>

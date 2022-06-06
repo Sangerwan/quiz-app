@@ -46,6 +46,31 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
+    },
+    {
+      path: '/Leaderboard',
+      name: 'Leaderboard',
+      component: () => import('../views/Leaderboard.vue')
+    },
+    {
+      path: '/Admin',
+      name: 'Admin',
+      component: () => import('../views/Admin.vue')
+    },
+    {
+      path: '/AdminQuestionManager',
+      name: 'AdminQuestionManager',
+      component: () => import('../views/AdminQuestionManager.vue')
+    },
+    {
+      path: '/AdminEditQuestion/:id',
+      name: 'AdminEditQuestion',
+      component: () => import('../views/AdminEditQuestion.vue'),
+    },
+    {
+      path: '/Result',
+      name: 'Result',
+      component: () => import('../views/Result.vue')
     }
   ]
 })
