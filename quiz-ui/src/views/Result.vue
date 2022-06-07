@@ -16,7 +16,7 @@ export default {
   async created() {
     console.log("created");
     try {       
-        const score =  await quizApiService.getScoreOfUser(
+        const score =  await quizApiService.getLastScore(
           ParticipationStorageService.getPlayerName(),
           ParticipationStorageService.getToken());
         if (score && score.data) 

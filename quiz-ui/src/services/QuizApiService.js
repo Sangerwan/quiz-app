@@ -54,8 +54,11 @@ export default {
   setParticipation(username,answers, token){
     return this.call("post","participations",{username : username, answers : answers},token)
   },
-  getScoreOfUser(username,token){
-    return this.call("get",`get-score/${username}`,null,token)
+  getLastScore(username,token){
+    return this.call("get",`get-last-score/${username}`,null,token)
+  },
+  getBestScore(username,token){
+    return this.call("get",`get-best-score/${username}`,null,token)
   },
   getQuestionCount(){
     return this.call("get", `questions-count`);

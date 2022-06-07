@@ -435,9 +435,11 @@ class DBHelper:
     ###
 
     def set_score(self, player_name,score):
+        
         query = (
-            f"UPDATE PLAYERS SET Score={score} WHERE Name='{player_name}'"
+            f"INSERT INTO SCORES (name, score) VALUES ('{player_name}', {score})"
         )
+        
         curr = self.db_connection.cursor()
         try :
             curr.execute("begin")
@@ -447,9 +449,9 @@ class DBHelper:
             print(e)
             curr.execute('rollback')
 
-    def get_score(self, player_name):
+    def get_last_score(self, player_name):
         query = (
-            f"Select Score FROM PLAYERS WHERE Name='"+player_name + "'"
+            f"SELECT score FROM SCORES WHERE name='{player_name}' AND score>=0 ORDER BY id DESC LIMIT 1"
         )
         curr = self.db_connection.cursor()
         try :
@@ -457,7 +459,28 @@ class DBHelper:
             curr.execute(query)
             score = curr.fetchone()
             if score is None:
-                return None
+                curr.execute('rollback')
+                return -1
+            result=score[0]
+            curr.execute("commit")
+            return result
+        except Exception as e:
+            print(e)
+            curr.execute('rollback')
+            return -1
+        
+    def get_best_score(self, player_name):
+        query = (
+            f"SELECT score from SCORES WHERE name='{player_name}' AND score>=0 ORDER BY score DESC LIMIT 1"
+        )
+        curr = self.db_connection.cursor()
+        try :
+            curr.execute("begin")
+            curr.execute(query)
+            score = curr.fetchone()
+            if score is None:
+                curr.execute("rollback")
+                return -1
 
             result=score[0]
             curr.execute("commit")
@@ -470,91 +493,13 @@ class DBHelper:
     ###
     # PARTICIPATION
     ###
-            
-    def add_participation(self, participation: participation.Participation):
-        question_json = participation.convertToJson()
-        for idx, key in enumerate(question_json):
-            if isinstance(question_json[key], str):
-                question_json[key] = question_json[key].replace("'", "''")
-                
-        query = (
-            f"INSERT INTO PARTICIPATIONS (player_name, answer_id, good_answer) VALUES"
-            f"('{question_json['player_name']}', '{question_json['id_question']}', '{question_json['isAGoodAnswer']}')"
-        )
-        curr = self.db_connection.cursor()
-        try :
-            curr.execute("begin")
-            curr.execute(query)
-            curr.execute("commit")
-        except Exception as e:
-            print(e)
-            curr.execute('rollback')
     
-    def get_participations(self, player_name):
-        query = (
-            f"SELECT id FROM PARTICIPATIONS where player_name="+player_name
-        )
-        curr = self.db_connection.cursor()
-        try :
-            curr.execute("begin")
-            curr.execute(query)
-            result=curr[0][0]
-            curr.execute("commit")
-            return result
-
-        except Exception as e:
-            print(e)
-            curr.execute('rollback')
-            return -1
-
-    def delete_participation(self, player_name):
-        query = (
-            f"DELETE FROM PARTICIPATIONS where player_name='"+player_name+"'"
-        )
-        curr = self.db_connection.cursor()
-        try :
-            curr.execute("begin")
-            curr.execute(query)
-            curr.execute("commit")
-        except Exception as e:
-            print(e)
-            curr.execute('rollback')
-
-        query = (
-            f"UPDATE PLAYERS SET Score=-1 WHERE Name='{player_name}'"
-        )
-
-        try :
-            curr.execute("begin")
-            curr.execute(query)
-            curr.execute("commit")
-        except Exception as e:
-            print(e)
-            curr.execute('rollback')
-        
-
     def delete_participations(self):
         query = (
-            f"DELETE FROM PARTICIPATIONS"
+            f"DELETE FROM SCORES"
         )
         curr = self.db_connection.cursor()
         try :
-            curr.execute("begin")
-            curr.execute(query)
-            curr.execute("commit")
-        except Exception as e:
-            print(e)
-            curr.execute('rollback')
-
-        query = (
-            f"DELETE FROM PLAYERS"
-        )
-
-        query = (
-            f"UPDATE PLAYERS SET Score=-1"
-        )
-
-        try:
             curr.execute("begin")
             curr.execute(query)
             curr.execute("commit")
@@ -612,8 +557,8 @@ class DBHelper:
 
     def add_player(self,username, password):				
         query = (
-            f"INSERT INTO PLAYERS (Name,Score,Password) VALUES"
-            f"('{username}','-1', '{password}')"
+            f"INSERT INTO PLAYERS (Name,Password) VALUES"
+            f"('{username}', '{password}')"
         )
         curr = self.db_connection.cursor()
         try :
@@ -646,7 +591,7 @@ class DBHelper:
 
     def get_players_name(self):
         query = (
-            f"SELECT player_name FROM PLAYERS"
+            f"SELECT name FROM PLAYERS"
         )
         curr = self.db_connection.cursor()
         try :
@@ -664,20 +609,13 @@ class DBHelper:
             return []
 
     def get_players_score(self):
-        query = (
-            f"SELECT Name, Score FROM PLAYERS WHERE Score>=0 ORDER BY Score DESC"
-        )
-        curr = self.db_connection.cursor()
-        try :
-            result = []
-            curr.execute("begin")
-            curr.execute(query)
-            for (player_name, score) in curr :
-                result.append({'playerName':player_name, 'score':score})
-            curr.execute("commit")
-            return result
 
-        except Exception as e:
-            print(e)
-            curr.execute('rollback')
-            return []
+        players = self.get_players_name()
+        
+        result = []
+        for player in players:
+            score = self.get_best_score(player)
+            if score>=0:
+                result.append({'playerName':player, 'score':score})
+        result = sorted(result, key=lambda k: k['score'], reverse=True)
+        return result

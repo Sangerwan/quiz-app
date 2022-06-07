@@ -38,6 +38,7 @@ export default {
       registeredScores : [],
       username : "",
       score : "",
+      bestScore : "",
       score_description : "",
       welcome_description : ""
     };
@@ -74,8 +75,8 @@ export default {
           if(this.username==="admin")
             this.$router.push('/Admin');
 
-          const result = await quizApiService.getScoreOfUser(this.username,participationStorageService.getToken())
-          this.score = result.data.score
+          const lastScore = await quizApiService.getLastScore(this.username,participationStorageService.getToken())
+          this.score = lastScore.data.score
           if (this.score!=-1){
             this.score_description="Your last score was "+this.score
             this.welcome_description="Welcome back "+this.username+" !"
@@ -83,6 +84,11 @@ export default {
             this.score = 0
             this.score_description="Play your first game now !"
             this.welcome_description="Welcome "+this.username
+          }
+          const bestScore = await quizApiService.getBestScore(this.username,participationStorageService.getToken())
+          this.bestScore = bestScore.data.score
+          if (this.bestScore!=-1){
+            this.score_description+=", your best score was "+this.bestScore
           }
         }          
       } catch (e) {

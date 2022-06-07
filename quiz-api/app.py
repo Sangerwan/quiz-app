@@ -209,7 +209,7 @@ def set_participation():
                 return "Bad request", 400
 
             # clean old participation
-            dbHelper.delete_participation(username)
+            # dbHelper.delete_participation(username)
 
 
             correct_participation = dbHelper.get_correct_participation()
@@ -272,14 +272,32 @@ def get_question_count():
     count = dbHelper.get_question_count()
     return {"count": count}, 200
 
-@app.route('/get-score/<username>', methods=['GET'])
-def get_score(username):
+@app.route('/get-last-score/<username>', methods=['GET'])
+def get_last_score(username):
     token = request.headers.get('Authorization')
     token = check_token(token)
     try:
         if jwt_utils.decode_token(token) == username:
             dbHelper = DBHelper()
-            score = dbHelper.get_score(username)
+            score = dbHelper.get_last_score(username)
+            if score is None:
+                return '', 404
+            return {"score": score}, 200
+        else:
+            return '', 401
+    except jwt_utils.JwtError as e:
+        return e.message, 401
+    except Exception as e:
+        return e.message, 401
+
+@app.route('/get-best-score/<username>', methods=['GET'])
+def get_best_score(username):
+    token = request.headers.get('Authorization')
+    token = check_token(token)
+    try:
+        if jwt_utils.decode_token(token) == username:
+            dbHelper = DBHelper()
+            score = dbHelper.get_best_score(username)
             if score is None:
                 return '', 404
             return {"score": score}, 200
