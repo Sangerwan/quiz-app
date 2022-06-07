@@ -2,17 +2,13 @@
   <div class="head">
     <h1>Leaderboard</h1>
   </div>
-
   <div class="body"> 
-
 
       <h1>Leaderboard</h1>
       <ul v-for="score in QuizInfo.scores">
         {{score.playerName}} - {{score.score}}
       </ul>
       
-
-
   </div>
 </template>
 

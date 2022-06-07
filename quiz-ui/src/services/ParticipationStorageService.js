@@ -18,15 +18,8 @@ export default {
   getPlayerName() {
     return window.localStorage.getItem("playerName");
   },
-  saveParticipationScore(participationScore) {
-    window.localStorage.setItem("participationScore", participationScore);
-  },
-  getParticipationScore() {
-    return window.localStorage.getItem("participationScore");
-  },
   disconnect() {
     window.localStorage.removeItem("playerName");
     window.localStorage.removeItem("token");
-    window.localStorage.removeItem("participationScore");
   }
 };

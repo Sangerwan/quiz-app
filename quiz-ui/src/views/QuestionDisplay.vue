@@ -26,10 +26,6 @@ export default {
       type: Object
     }
   },
-  async created(){
-    //console.log(this.question, "display question");
-    //console.log(this.answers, "display answers");
-  }
 };
 </script>
 

@@ -6,7 +6,6 @@ from ObjectNotExistException import ObjectNotExistException
 import jwt_utils
 from question import Question
 from answer import Answer
-from participation import Participation
 from dbhelper import DBHelper
 import bcrypt
 app = Flask(__name__)
@@ -29,30 +28,30 @@ def check_token(token):
 
 @app.route('/login', methods=['POST'])
 def login():
-    payload = request.get_json()
     try:
+        payload = request.get_json()
         username = payload["username"]
+        
+        dbHelper = DBHelper()
+    
+        new_user = False
+
+        password_hash = dbHelper.get_player_password_hash(username)
+        if password_hash is None:
+            new_user = True
+        else:
+            password_hash = password_hash.encode()
+        password = payload["password"]
+        
+        if new_user:
+            password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+            dbHelper.add_player(username, password_hash.decode())
+
+        if bcrypt.checkpw(password.encode(), password_hash):
+            token = jwt_utils.build_token(username)
+            return {"token": token}, 200
     except Exception as e:
         return '', 401
-
-    dbHelper = DBHelper()
-    
-    new_user = False
-
-    password_hash = dbHelper.get_player_password_hash(username)
-    if password_hash is None:
-        new_user = True
-    else:
-        password_hash = password_hash.encode()
-    password = payload["password"]
-    
-    if new_user:
-        password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-        dbHelper.add_player(username, password_hash.decode())
-
-    if bcrypt.checkpw(password.encode(), password_hash):
-        token = jwt_utils.build_token(username)
-        return {"token": token}, 200
     return '', 401
 
 @app.route('/is-logged/<username>', methods=['GET'])
@@ -82,11 +81,9 @@ def is_logged(username):
 
 @app.route('/questions', methods=['POST'])
 def add_question():
-
-    token = request.headers.get('Authorization')
-    token = check_token(token)
-
     try:
+        token = request.headers.get('Authorization')
+        token = check_token(token)
         # check if the token is valid
         payload = request.get_json()
         if jwt_utils.decode_token(token) == "admin":
@@ -127,20 +124,19 @@ def get_questions():
 
         if questions is None:
             return '', 404
+        return {"questions": questions}, 200
 
     except ObjectNotExistException as e_custom:
         return e_custom.message, 404
     except Exception as e_base:
         return e_base.message, 404
-    return {"questions": questions}, 200
 
 @app.route('/questions/<position>', methods=['DELETE'])
 def delete_quetion(position):
 
-    token = request.headers.get('Authorization')
-    token = check_token(token)
-    
     try:
+        token = request.headers.get('Authorization')
+        token = check_token(token)
         if jwt_utils.decode_token(token) == "admin":
 
             dbHelper = DBHelper()
@@ -157,11 +153,9 @@ def delete_quetion(position):
 
 @app.route('/questions/<position>', methods=['PUT'])
 def update_question(position):
-    
-    token = request.headers.get('Authorization')
-    token = check_token(token)
-
     try:
+        token = request.headers.get('Authorization')
+        token = check_token(token)
         # check if the token is valid
         if jwt_utils.decode_token(token) == "admin":
 
@@ -189,11 +183,9 @@ def update_question(position):
 
 @app.route('/participations', methods=['POST'])
 def set_participation():
-
-    token = request.headers.get('Authorization')
-    token = check_token(token)
-
     try:
+        token = request.headers.get('Authorization')
+        token = check_token(token)
         payload = request.get_json()
         username = payload['username']
         answersId = payload['answers']
@@ -207,10 +199,6 @@ def set_participation():
 
             if (question_count != len(answersId)):
                 return "Bad request", 400
-
-            # clean old participation
-            # dbHelper.delete_participation(username)
-
 
             correct_participation = dbHelper.get_correct_participation()
             if correct_participation is None:
@@ -234,10 +222,10 @@ def set_participation():
 
 @app.route('/participations', methods=['DELETE'])
 def delete_participations():
-    token = request.headers.get('Authorization')
-    token = check_token(token)
 
     try:
+        token = request.headers.get('Authorization')
+        token = check_token(token)
         if jwt_utils.decode_token(token) == "admin":
 
             dbHelper = DBHelper()
@@ -258,29 +246,34 @@ def delete_participations():
 
 @app.route('/quiz-info', methods=['GET'])
 def get_quiz_info():
+    try:
+        dbHelper = DBHelper()
+        scores = dbHelper.get_players_score()
+        numberQuestions = dbHelper.get_question_count()
 
-    dbHelper = DBHelper()
-    scores = dbHelper.get_players_score()
-    numberQuestions = dbHelper.get_question_count()
-
-    return {"size": numberQuestions, "scores": scores}, 200
+        return {"size": numberQuestions, "scores": scores}, 200
+    except Exception as e:
+        return e.message, 401
 
 @app.route('/questions-count', methods=['GET'])
 def get_question_count():
-
-    dbHelper = DBHelper()
-    count = dbHelper.get_question_count()
-    return {"count": count}, 200
+    try:
+        dbHelper = DBHelper()
+        count = dbHelper.get_question_count()
+        return {"count": count}, 200
+    except Exception as e:
+        return e.message, 401
 
 @app.route('/get-last-score/<username>', methods=['GET'])
 def get_last_score(username):
-    token = request.headers.get('Authorization')
-    token = check_token(token)
+
     try:
+        token = request.headers.get('Authorization')
+        token = check_token(token)
         if jwt_utils.decode_token(token) == username:
             dbHelper = DBHelper()
             score = dbHelper.get_last_score(username)
-            if score is None:
+            if score == -1:
                 return '', 404
             return {"score": score}, 200
         else:
@@ -292,13 +285,13 @@ def get_last_score(username):
 
 @app.route('/get-best-score/<username>', methods=['GET'])
 def get_best_score(username):
-    token = request.headers.get('Authorization')
-    token = check_token(token)
     try:
+        token = request.headers.get('Authorization')
+        token = check_token(token)
         if jwt_utils.decode_token(token) == username:
             dbHelper = DBHelper()
             score = dbHelper.get_best_score(username)
-            if score is None:
+            if score == -1:
                 return '', 404
             return {"score": score}, 200
         else:
@@ -310,13 +303,18 @@ def get_best_score(username):
 
 @app.route('/questions/<position>/answers', methods=['GET'])
 def get_answer(position):
-
-    dbHelper = DBHelper()
-    answers = dbHelper.get_answer(position)
-    for key in answers:
-        answers[key].pop('questionID', None)
-        answers[key].pop('isCorrect', None)
-    return {"answers", answers}, 200
-
+    try:
+        dbHelper = DBHelper()
+        answers = dbHelper.get_answer(position)
+        if answers is None:
+            return '', 404
+            
+        for key in answers:
+            answers[key].pop('questionID', None)
+            answers[key].pop('isCorrect', None)
+        return {"answers", answers}, 200
+    except Exception as e:
+        return e.message, 401
+    
 if __name__ == "__main__":
     app.run()

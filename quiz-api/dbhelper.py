@@ -2,7 +2,6 @@ import sqlite3
 from ObjectNotExistException import ObjectNotExistException
 import question
 import answer
-import participation
 import json
 class DBHelper:
     def __init__(self):
@@ -31,8 +30,6 @@ class DBHelper:
         for idx, key in enumerate(question_json):
             if isinstance(question_json[key], str):
                 question_json[key] = question_json[key].replace("'", "''")                
-
-        
 
         if self.get_question(question_json['position']):
             self.increase_question_position_from_position(question_json['position'])
@@ -123,38 +120,24 @@ class DBHelper:
         if len(question_list) == 0:
             return None
 
-
         for q in question_list:
             q.possibleAnswers = self.get_answer(q.id)
 
         return question.Question.convertListOfQuestionsToJson(question_list)
     
     def delete_question(self,position):
-        querySel = (
-            f"SELECT id FROM questions WHERE position={position}"
-        )
-
-        curr = self.db_connection.cursor()
-        try :
-            curr.execute("begin")
-            curr.execute(querySel)
-            id=curr.fetchone()		
-            curr.execute("commit")
-        except Exception as e:
-            print(e)
-            curr.execute('rollback')
-            return
-
+        
+        id = self.get_question_id(position)
+        
         if id is None:
             raise ObjectNotExistException
-
-        id = id[0]
         
         queryDelAnswer = (
             f"DELETE FROM answers WHERE questionID={id}"
         )
         
         try :
+            curr = self.db_connection.cursor()
             curr.execute("begin")
             curr.execute(queryDelAnswer)
             curr.execute("commit")
@@ -162,7 +145,6 @@ class DBHelper:
             print(e)
             curr.execute('rollback')
             return
-
 
         queryDel = (
             f"DELETE FROM questions WHERE id={id}"
@@ -185,7 +167,6 @@ class DBHelper:
             raise ObjectNotExistException("Question not found")
             
         old_position = question.position
-
 
         query = (
             f"SELECT max(position) from questions"
@@ -348,8 +329,6 @@ class DBHelper:
         except Exception as e:
             print(e)
             curr.execute('rollback')
-
-
 
     ###
     # ANSWERS

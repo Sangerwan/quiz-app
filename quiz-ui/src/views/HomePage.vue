@@ -16,28 +16,28 @@ export default {
   },
   async created() {
     const instance = await quizApiService.getQuizInfo();   
-     try {    
-       const username =   participationStorageService.getPlayerName()
-       if (!username){
-          this.$router.push('/login-page');
-       }
-        const response =  await quizApiService.isLogged(
-          participationStorageService.getPlayerName(),
-          participationStorageService.getToken());
-        if (response.data.isLogged) {
-          this.$router.push('/home-page-logged');
-          this.errorDetails=participationStorageService.getPlayerName()+" is logged";
-        }else{
-          this.$router.push('/login-page');
-          this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
-        }          
-      } catch (e) {
-        this.$router.push('/login-page');
-        this.errorDetails=participationStorageService.getPlayerName()+" need to log again";
-      }  
+    try {    
+      const username =   participationStorageService.getPlayerName()
+      if (!username){
+        return this.$router.push('/login-page');
+      }
+      const response =  await quizApiService.isLogged(
+                        participationStorageService.getPlayerName(),
+                        participationStorageService.getToken());
 
-
-    //console.log("Composant Home page 'created' ", this.registeredScores.length);
+      if (!response.data.isLogged) 
+      {
+        return this.$router.push('/login-page');
+      }
+      else
+      {
+        return this.$router.push('/home-page-logged');
+      }          
+    } 
+    catch (e) 
+    {
+      return this.$router.push('/login-page');
+    }  
   }
 };
 

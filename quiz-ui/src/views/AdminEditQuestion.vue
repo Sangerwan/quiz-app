@@ -90,13 +90,13 @@ export default {
   },
   
   async created() {
-      console.log("created")
+
       try {       
         const response =  await quizApiService.isLogged(
         participationStorageService.getPlayerName(),
         participationStorageService.getToken());
           if (!response.data.isLogged) 
-            this.$router.push('/');
+            this.disconnect();
       } 
       catch (e) {
           this.disconnect();
@@ -140,24 +140,24 @@ export default {
       }
       else
       {
-        const question = await quizApiService.getQuestion(this.currentQuestionPosition);
-        this.currentQuestion = question.data;
-      }     
-
+        try{
+          const question = await quizApiService.getQuestion(this.currentQuestionPosition);
+          this.currentQuestion = question.data;
+        }
+        catch (e) {
+          console.log(e)
+        }      
+      }
       this.testimg = this.currentQuestion.image;
     },
   methods: {
-    async disconnect() {
-      try {        
-        participationStorageService.disconnect();
-        this.$router.push('/');        
-      } catch (e) {
-        console.log(e)
-      }      
+    disconnect() {
+      participationStorageService.disconnect();
+      return this.$router.push('/');
     },
 
-    async back() {
-      this.$router.push('/AdminQuestionManager');
+    back() {
+      return this.$router.push('/AdminQuestionManager');
     },
     async save() {
       if(this.checkQuestion()){
@@ -165,15 +165,15 @@ export default {
         await quizApiService.addQuestion(this.currentQuestion, participationStorageService.getToken());
         else
           await quizApiService.updateQuestion(this.currentQuestionPosition, JSON.stringify( this.currentQuestion), participationStorageService.getToken());
-        this.$router.push('/AdminQuestionManager');
+        return this.$router.push('/AdminQuestionManager');
       }
     },
-    async revert() {
-      this.$router.go();
+    revert() {
+      return this.$router.go();
     },
     async deleteQuestion() {
       await QuizApiService.deleteQuestion(this.currentQuestionPosition, participationStorageService.getToken());
-      this.$router.push('/AdminQuestionManager');
+      return this.$router.push('/AdminQuestionManager');
     },
     checkCheckbox(index) {
       this.currentQuestion.possibleAnswers.forEach(answer => {

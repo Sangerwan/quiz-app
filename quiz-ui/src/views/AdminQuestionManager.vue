@@ -52,8 +52,8 @@ export default {
         const response =  await quizApiService.isLogged(
         participationStorageService.getPlayerName(),
         participationStorageService.getToken());
-          if (!response.data.isLogged) 
-            this.$router.push('/');
+        if (!response.data.isLogged) 
+          this.disconnect();
       } 
       catch (e) {
           this.disconnect();
@@ -68,21 +68,15 @@ export default {
       }
     },
   methods: {
-    async disconnect() {
-      try {        
-        participationStorageService.disconnect();
-        this.$router.push('/');        
-      } catch (e) {
-        console.log(e)
-      }      
+    disconnect() {
+      participationStorageService.disconnect();
+      return this.$router.push('/');
     },
-    async editQuestion(index) {
-      console.log("editQuestion", index)
-      this.$router.push({ name: "AdminEditQuestion", params: { id: index } });
+    editQuestion(index) {
+      return this.$router.push({ name: "AdminEditQuestion", params: { id: index } });
     },
-    async addQuestion() {
-      console.log("addQuestion")
-      this.$router.push({ name: "AdminEditQuestion" , params: { id: 0 } });
+    addQuestion() {
+      return this.$router.push({ name: "AdminEditQuestion" , params: { id: 0 } });
     },
   }
 };

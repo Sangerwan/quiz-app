@@ -40,10 +40,13 @@ export default {
       try {        
         this.errorDetails="";
         const response = await quizApiService.login(this.password,this.username);
-        this.errorDetails="Good password";
-        participationStorageService.saveToken(response.data.token);
-        participationStorageService.savePlayerName(this.username);
-        this.$router.push('/home-page-logged');        
+        if(response && response.data && response.data.token){
+          this.errorDetails="Good password";
+          participationStorageService.saveToken(response.data.token);
+          participationStorageService.savePlayerName(this.username);
+          return this.$router.push('/home-page-logged');   
+        }
+     
       } catch (e) {
         this.errorDetails="Wrong password";
         this.password= "";
@@ -56,13 +59,12 @@ export default {
         const response =  await quizApiService.isLogged(
           participationStorageService.getPlayerName(),
           participationStorageService.getToken());
-        if (response.data.isLogged) {
-          this.$router.push('/home-page-logged');
+        if (response && response.data && response.data.isLogged) {
+          return this.$router.push('/home-page-logged');
         }           
       } catch (e) {
-        
+        return this.$router.push('/');
       }  
-    
   }
 
 };

@@ -66,5 +66,4 @@ export default {
   addQuestion(data, token){
     return this.call("post", "questions", data, token);
   }
-
 };

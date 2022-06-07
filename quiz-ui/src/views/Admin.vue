@@ -1,13 +1,10 @@
 <template>
-
-  
   <div class="head">
     <h1>Admin</h1>
     <div>
       <button @click="disconnect" class="buttonSimple">Disconnect</button>
     </div>
   </div>
-
 
   <div class="body"> 
       <div>
@@ -30,22 +27,18 @@ export default {
           participationStorageService.getPlayerName(),
           participationStorageService.getToken());
         if (!response.data.isLogged) 
-          this.$router.push('/');
+          this.disconnect();
       } catch (e) {
         this.disconnect();
       }  
   },
   methods: {
     manageQuestion() {
-      this.$router.push('/AdminQuestionManager');
+      return this.$router.push('/AdminQuestionManager');
     },
-    async disconnect() {
-      try {        
-        participationStorageService.disconnect();
-        this.$router.push('/');        
-      } catch (e) {
-        console.log(e)
-      }      
+    disconnect() {   
+      participationStorageService.disconnect();
+      return this.$router.push('/');        
     },
   }
 };

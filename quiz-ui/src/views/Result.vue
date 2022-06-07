@@ -14,7 +14,6 @@ export default {
     };
   },
   async created() {
-    console.log("created");
     try {       
         const score =  await quizApiService.getLastScore(
           ParticipationStorageService.getPlayerName(),
@@ -22,20 +21,15 @@ export default {
         if (score && score.data) 
           this.nbGoodAnswers = score.data.score
         else 
-          this.$router.push('/');
+          return this.$router.push('/');
+        const responseCount = await quizApiService.getQuestionCount()
+        if(responseCount && responseCount.data && responseCount.data.count)
+          this.nbQuestions = responseCount.data.count
+        else
+          return this.$router.push('/');
     } catch (e) {
-      this.$router.push('/');
+      return this.$router.push('/');
     }  
-    try{
-      const responseCount = await quizApiService.getQuestionCount()
-      if(responseCount && responseCount.data && responseCount.data.count)
-        this.nbQuestions = responseCount.data.count
-      else
-        this.$router.push('/');
-    }
-    catch(e){
-      this.$router.push('/');
-    }
   }
 };
 

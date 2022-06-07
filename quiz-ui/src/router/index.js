@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../views/HomePage.vue'
-import NewQuizPage from '../views/NewQuizPage.vue'
-import Question from '../views/NewQuizPage.vue'
 import QuestionManager from '../views/QuestionManager.vue'
 import LoginPage from '../views/LoginPage.vue'
 import HomePageLogged from '../views/HomePageLogged.vue'
@@ -23,16 +21,6 @@ const router = createRouter({
       path: '/login-page',
       name: 'LoginPage',
       component: LoginPage
-    },
-    {
-      path: '/start-new-quiz-page',
-      name: 'NewQuizPage',
-      component: NewQuizPage
-    },
-    {
-      path: '/questions',
-      name: 'Questions',
-      component: Question
     },
     {
       path: '/question-manager',
