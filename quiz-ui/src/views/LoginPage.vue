@@ -40,7 +40,7 @@ export default {
       try {        
         this.errorDetails="";
         const response = await quizApiService.login(this.password,this.username);
-        if(response && response.data && response.data.token){
+        if(response.data && response.data.token){
           this.errorDetails="Good password";
           participationStorageService.saveToken(response.data.token);
           participationStorageService.savePlayerName(this.username);
